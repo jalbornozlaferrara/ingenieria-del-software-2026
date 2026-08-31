@@ -31,7 +31,8 @@ Al finalizar este TP, cada integrante del grupo debería poder:
 - Identificar las causas recurrentes de fracaso en proyectos de software (Módulo 1: problemas de duración, costo, compromisos y manejo de desvíos) y anticipar cuál de ellas es más probable en el proyecto propio.
 - Aplicar al menos una técnica de elicitación de requerimientos sobre un dominio de datos real, elegido por el propio grupo.
 - Distinguir requerimientos funcionales de atributos de calidad (no funcionales) y expresarlos con precisión.
-- Redactar casos de uso en formato textual (Cockburn) y/o historias de usuario, con criterios de aceptación verificables — y conocer las reglas de notación UML de casos de uso (actores, `<<include>>`/`<<extend>>`, límite del sistema) lo suficiente como para representarlas a mano si se solicita.
+- Redactar requerimientos funcionales verificables y trazarlos hacia los casos de uso e historias de usuario que los realizan.
+- Redactar casos de uso esenciales en formato textual (Cockburn) y descomponerlos en slices — el flujo principal y los alternativos/excepciones relevantes — que se detallan progresivamente como historias de usuario con criterios de aceptación verificables, a lo largo del cuatrimestre. Conocer además las reglas de notación UML de casos de uso (actores, `<<include>>`/`<<extend>>`, límite del sistema, generalización de actores) lo suficiente como para representarlas a mano si se solicita.
 - Construir un modelo de dominio inicial: las entidades y relaciones esenciales del problema.
 - Dejar el repositorio Git del grupo configurado y con evidencia real de proceso desde el primer commit.
 
@@ -50,6 +51,8 @@ Al finalizar este TP, cada integrante del grupo debería poder:
 ## 3. Marco general: un ciclo de vida que se recorre en el cuatrimestre
 
 El proyecto no se construye de una sola vez ni de punta a punta antes de mostrar nada: se construye de forma **iterativa e incremental**, un TP a la vez, y cada instancia de presentación es un punto de control (una revisión, no un examen sobre teoría suelta). El TP1 fija la primera iteración.
+
+Tampoco se construye completo en superficie: el TP1 fija, además de la primera iteración, **qué parte del sistema se lleva a detalle** durante el resto del cuatrimestre — el resto queda documentado solo a nivel de alcance (ver secc. 4.6). El proyecto completo, de punta a punta, es una posibilidad del Trabajo Integrador optativo, no una expectativa de TP1 a TP5.
 
 ```mermaid
 flowchart LR
@@ -113,9 +116,9 @@ El canvas **no queda como un ejercicio suelto de pizarra**: pasa a ser la secci�
 
 El `README.md` del repositorio sí queda más liviano: una síntesis de 3-4 líneas (qué se construye, para quién) con un link a la sección correspondiente del SRS — su función es orientar a quien llega al repositorio, no duplicar el contenido completo.
 
-### 4.4 Salida de la actividad: diagrama de contexto inicial (DFD Nivel 0)
+### 4.4 Diagrama de contexto y descomposición funcional (DFD)
 
-Como cierre de la actividad de descubrimiento, el grupo produce un **diagrama de contexto** siguiendo la notación de Diagrama de Flujo de Datos (DFD) Nivel 0: el sistema completo como un único proceso (numerado 0), sus entidades externas y los flujos de datos entre ambos. La simbología completa, las reglas de construcción y una plantilla en Mermaid están en [`docs/instructivos/diagrama-de-contexto-dfd.md`](../instructivos/diagrama-de-contexto-dfd.md).
+Como cierre de la actividad de descubrimiento, el grupo produce un **diagrama de contexto** siguiendo la notación de Diagrama de Flujo de Datos (DFD) Nivel 0: el sistema completo como un único proceso (numerado 0), sus entidades externas y los flujos de datos entre ambos.
 
 ```mermaid
 flowchart TD
@@ -129,15 +132,107 @@ flowchart TD
     F -->|responde datos| P
 ```
 
-Este diagrama se escribe directamente como bloque Mermaid en un archivo `.md` del repositorio (por ejemplo, dentro del propio SRS o en `docs/architecture/contexto-inicial.md`) — nunca como imagen pegada.
+El DFD no se queda en el contexto: a partir de Nivel 0, el proceso se puede descomponer en sus procesos internos (Nivel 1), y cada uno de esos procesos, si todavía no es lo bastante concreto, se puede volver a descomponer (Nivel 2, y así sucesivamente). No hay un número de niveles fijo — se baja tanto como haga falta para reconocer, dentro del proceso 0, **procesos internos suficientemente concretos como para ser candidatos a desarrollar en profundidad**. Tampoco hace falta descomponer todo el sistema a la misma profundidad: alcanza con bajar lo suficiente para identificar esos candidatos; cuál o cuáles se llevan a mayor detalle es la decisión de la sección 4.6.
 
-### 4.5 Especificación de casos de uso: formato textual, no diagrama
+La simbología completa, la numeración jerárquica de procesos, la regla de balanceo entre niveles y una plantilla en Mermaid para Nivel 1 están en [`docs/instructivos/diagrama-de-contexto-dfd.md`](../instructivos/diagrama-de-contexto-dfd.md).
 
-Los casos de uso de este TP se redactan en **formato textual estructurado (Cockburn)** — actor, precondición, flujo principal, flujos alternativos, postcondición — y no como diagrama gráfico UML de casos de uso.
+Todos estos diagramas se escriben directamente como bloques Mermaid en un archivo `.md` del repositorio (por ejemplo, dentro del propio SRS o en `docs/architecture/contexto-inicial.md`) — nunca como imagen pegada.
 
-La razón es técnica, no una simplificación: Mermaid (la única herramienta de diagramación del curso, por la regla de todo-en-GitHub) no incluye un tipo de diagrama de casos de uso nativo. Una aproximación mediante `flowchart` no respeta la semántica de la notación UML de casos de uso (actor, caso de uso, límite del sistema, relaciones de inclusión y extensión), por lo que produce un artefacto visualmente similar pero conceptualmente incorrecto, con el riesgo adicional de inducir a error sobre la notación real.
+### 4.5 Modelo de dominio conceptual
 
-> **Esto no exime de saber la notación.** El diagrama de casos de uso UML —actor, elipse de caso de uso, límite del sistema, relaciones `<<include>>` y `<<extend>>`, generalización de actores— sigue siendo contenido exigible del curso. El grupo debe poder **dibujarlo a mano y explicarlo** (en el pizarrón, en una hoja, o verbalmente) durante las clases de práctica y en la Instancia 1, si el docente lo solicita. No entregar el diagrama gráfico como artefacto del repositorio no significa no saberlo — significa que el repositorio no es el lugar para una notación que la herramienta del curso no soporta correctamente.
+En paralelo con el DFD, el grupo construye un **modelo de dominio inicial**: las entidades y relaciones esenciales del problema, en el nivel de un diagrama conceptual — sin atributos, sin tipos de dato, sin métodos ni visibilidad. Ese nivel de detalle llega recién en TP4 (diseño detallado). Acá interesa únicamente **qué grandes conceptos de información maneja el sistema y cómo se relacionan entre sí**.
+
+Se representa en Mermaid, como diagrama de clases conceptual o diagrama ER:
+
+```mermaid
+classDiagram
+    class Usuario
+    class ConjuntoDeDatos
+    class Analisis
+
+    Usuario "1" --> "*" ConjuntoDeDatos : carga
+    ConjuntoDeDatos "1" --> "*" Analisis : genera
+```
+
+Este modelo es deliberadamente provisorio en Semana 2: se refina en la Semana 4 (ver cronograma, secc. 5) a medida que el grupo entiende mejor el dominio y avanza con los requerimientos funcionales y los casos de uso — cada caso de uso involucra entidades de este modelo, así que ambos artefactos evolucionan juntos. Se documenta en el mismo lugar que el DFD (dentro del SRS o en `docs/architecture/`), nunca como imagen pegada.
+
+### 4.6 Selección de proceso(s) a desarrollar en profundidad
+
+De los procesos internos identificados al descomponer el DFD (secc. 4.4), el grupo elige **uno o más** — no hace falta, ni se espera, que sea el sistema completo — para llevarlos a un nivel de detalle real durante el resto del cuatrimestre: requerimientos funcionales (secc. 4.7), casos de uso, slices e historias de usuario (secc. 4.8), y más adelante UX (TP2), arquitectura (TP3), diseño (TP4) y pruebas (TP5). El resto del sistema queda documentado únicamente al nivel de alcance (DFD + modelo de dominio) — no se espera que tenga casos de uso, historias de usuario ni diseño propio este cuatrimestre.
+
+La cantidad de procesos elegidos queda a criterio del grupo, según lo que puedan sostener con calidad en el tiempo disponible (2 a 3 personas, un cuatrimestre): **elegir uno bien resuelto vale más que varios a medio desarrollar.** La elección se documenta y se justifica en el SRS — qué proceso(s) se eligieron, cuáles quedaron fuera y por qué — con el mismo criterio de argumentación que ya se pide para el modelo de ciclo de vida (secc. 3.1).
+
+Esta decisión responde también algo que conviene tener claro desde ahora: el proyecto **no se construye completo** dentro de la cursada regular (TP1 a TP5) — se construye completo, si el grupo lo decide, recién en el Trabajo Integrador optativo. Elegir menos y profundizarlo bien es la estrategia esperada, no un signo de alcance insuficiente.
+
+### 4.7 Requerimientos funcionales
+
+Antes de bajar a casos de uso, el o los procesos elegidos en 4.6 se traducen en una lista de **requerimientos funcionales (RF)**: enunciados breves y verificables de qué debe hacer el sistema, sin describir cómo lo hace por dentro.
+
+```
+RF-01: El sistema debe permitir cargar un archivo de datos de entrada en formato [X].
+RF-02: El sistema debe validar que los datos cargados cumplan el formato y los rangos esperados.
+RF-03: El sistema debe informar al usuario los errores de validación encontrados, indicando fila y motivo.
+```
+
+Cada RF tiene un identificador propio desde que se escribe (`RF-01`, `RF-02`...), por la misma razón que ya rige para casos de uso e historias de usuario (trazabilidad, secc. 6.2). Los RF son el primer eslabón de la cadena de trazabilidad que se construye en este TP:
+
+**RF → CU → slice → HU**
+
+Cada caso de uso declara qué RF realiza (`Realiza: RF-01, RF-03`), y por transitividad, cada historia de usuario que se desprende de un slice de ese CU también realiza esos RF, aunque no lo repita explícitamente. No hace falta redactar RF para todo el sistema — solo para el o los procesos elegidos en 4.6, igual que el resto de los artefactos de esta sección.
+
+### 4.8 Casos de uso, slices e historias de usuario
+
+**Formato: textual, no diagrama.** Los casos de uso de este TP se redactan en **formato textual estructurado (Cockburn)** — actor, precondición, flujo principal, flujos alternativos, postcondición — y no como diagrama gráfico UML de casos de uso. La razón es técnica, no una simplificación: Mermaid (la única herramienta de diagramación del curso, por la regla de todo-en-GitHub) no incluye un tipo de diagrama de casos de uso nativo, y una aproximación mediante `flowchart` produce un artefacto visualmente similar pero conceptualmente incorrecto.
+
+> **Esto no exime de saber la notación.** El diagrama de casos de uso UML —actor, elipse de caso de uso, límite del sistema, relaciones `<<include>>` y `<<extend>>`, generalización de actores— sigue siendo contenido exigible del curso. El grupo debe poder **dibujarlo a mano y explicarlo** durante las clases de práctica y en la Instancia 1, si el docente lo solicita.
+
+**Caso de uso esencial.** Para cada proceso elegido en 4.6, se redacta un caso de uso esencial: actor, objetivo, RF que realiza, precondición, **flujo principal detallado**, y postcondición.
+
+**Slices.** El flujo principal es el *slice básico* del caso de uso. Los flujos alternativos y de excepción son *slices secundarios* — en TP1 se **nombran, sin desarrollar** (una línea cada uno), con un sub-identificador que reserva su lugar para cuando se detallen:
+
+```
+CU-01 · Cargar archivo de datos de entrada
+  Realiza: RF-01, RF-02
+  Flujo principal (slice básico): [detallado]
+  Slices secundarios nombrados:
+    - A1: archivo con formato inválido
+    - A2: archivo vacío
+    - E1: conexión interrumpida durante la carga
+```
+
+**Cuándo un alternativo deja de ser un slice del mismo CU.** La mayoría de los alternativos/excepciones son variaciones de *cómo* se logra el mismo objetivo, no un objetivo nuevo — se quedan como slice secundario del CU. Pero si un alternativo resulta ser en realidad un **objetivo propio del actor** (el ejemplo clásico: "recuperar contraseña" colgado de "iniciar sesión"), se separa como su propia historia de usuario o caso de uso chico, con un identificador de primer nivel (`HU-05`), no subordinado al CU original.
+
+**De slice a historia de usuario.** Un slice se detalla como historia de usuario recién cuando algún TP posterior lo necesita (UX en TP2, diseño en TP4, etc.) — no todos de una vez. La HU conserva el sub-identificador del slice que detalla, con un campo explícito de origen:
+
+```
+HU-01.A1 · Manejo de archivo con formato inválido
+Deriva de: CU-01, slice A1
+Como analista de datos,
+quiero recibir un mensaje claro cuando el archivo cargado tiene formato inválido,
+para poder corregirlo sin perder tiempo revisando el sistema.
+```
+
+Un slice nombrado que ningún TP posterior llega a necesitar en detalle (típicamente validaciones triviales) puede quedarse para siempre como la línea nombrada, sin convertirse nunca en HU — no es una omisión, es que no todo slice justifica ese nivel de inversión.
+
+**Un slice puede dar lugar a más de una HU.** Cuando el slice básico (o un slice secundario) es disparado por más de un actor —generalización de actores, la misma notación UML que ya es contenido exigible— y el motivo de cada actor es distinto aunque el mecanismo del sistema sea idéntico, corresponde una HU por actor, distinguidas con sufijo de letra:
+
+```
+CU-01 · Cargar archivo de datos de entrada
+  Flujo principal (slice básico)
+    HU-01a · Como usuario, quiero cargar mi archivo para analizarlo yo mismo.
+    HU-01b · Como administrador, quiero cargar el archivo en nombre de un usuario para resolver un problema reportado.
+```
+
+**Test de frontera**, para no abusar de esta multiplicidad: antes de escribir dos HU sobre el mismo slice hay que verificar que el flujo es *realmente* idéntico — mismos pasos, misma postcondición. Si un actor en realidad salta un paso o el sistema hace algo distinto para él, ya no es "misma slice, otra HU": es un slice secundario propio (`CU-01.A2`), no una variante de la básica.
+
+**Criterios de aceptación (Given-When-Then).** El Given y el Then de una HU tienen que poder rastrearse a la precondición/postcondición de *ese* slice puntual, no del CU completo — si el Then describe el resultado del flujo principal en una HU que detalla un alternativo, la trazabilidad se rompió. Errores típicos a evitar:
+
+- **Then vago, no verificable**: "el sistema funciona correctamente" no es un Then — tiene que ser un resultado observable (un mensaje específico, un estado que cambió, un dato que aparece o desaparece).
+- **When con más de una acción**: si junta dos pasos, en realidad son dos criterios o el slice está mal cortado.
+- **Given demasiado amplio**: tiene que fijar exactamente el estado que hace relevante ese slice, no el estado general del sistema.
+- **Then que describe implementación**: se queda en qué observa el actor, no en cómo lo logra el sistema por dentro.
+
+Para TP1 alcanza con 2-3 criterios GWT por HU (el camino esperado del slice + un borde relevante) — cobertura exhaustiva es contenido de TP5 (Pruebas, Módulo 6), donde estos mismos criterios son la semilla natural de los casos de prueba.
 
 ---
 
@@ -147,7 +242,7 @@ La razón es técnica, no una simplificación: Mermaid (la única herramienta de
 |---|---|---|---|
 | 2 | 10/08 | **Inicio** — elección de área de dolencia/interés, actividad de descubrimiento, identificación de stakeholders, exploración del dominio | Sección inicial del SRS (visión y alcance), lista de stakeholders, diagrama de contexto inicial (DFD Nivel 0) |
 | 3 | 17/08 | **Feriado nacional (Paso a la Inmortalidad del Gral. San Martín) — sin sesión de práctica.** El grupo puede seguir commiteando avances por su cuenta, pero no hay actividad de cátedra pautada esta semana. | — |
-| 4 | 24/08 | **Trabajo** — modelo de dominio refinado, casos de uso detallados, historias de usuario con criterios de aceptación | Modelo de dominio (Mermaid ER o de clases conceptual), CU/HU |
+| 4 | 24/08 | **Trabajo** — modelo de dominio refinado, requerimientos funcionales del proceso elegido, casos de uso esenciales con sus slices | Modelo de dominio (Mermaid ER o de clases conceptual), RF, CU/slices |
 | 5 | 31/08 | **Cierre** — especificación detallada de un caso de uso/HU representativo, preparación de la presentación | SRS consolidado, atributos de calidad según ISO 25010 con sus escenarios de calidad correspondientes, primera línea base del repositorio (tag `v1.0.0`) |
 | — | 01/09 | **Instancia 1** — presentación oral (Módulos 1+2) | Defensa de decisiones ante el docente |
 
@@ -182,11 +277,13 @@ Desde este primer TP, el repositorio **es** parte del proyecto, no un lugar dond
 
 ### 6.2 Commits durante el TP1
 
-Cada historia de usuario o caso de uso que se agrega al SRS se commitea con su propio identificador desde el principio — esto es lo que después, en el Módulo 7, se formaliza como trazabilidad. Convención sugerida:
+Cada requerimiento funcional, caso de uso o historia de usuario que se agrega al SRS se commitea con su propio identificador desde el principio — esto es lo que después, en el Módulo 7, se formaliza como trazabilidad. Convención sugerida:
 
 ```
-docs: agrega HU-01 al SRS — carga de archivo de datos de entrada
-docs: agrega HU-02 al SRS — validación de calidad de los datos cargados
+docs: agrega RF-01 y RF-02 al SRS — carga y validación de datos de entrada
+docs: agrega CU-01 al SRS — cargar archivo de datos de entrada (flujo principal + slices nombrados)
+docs: agrega HU-01a al SRS — carga de archivo por parte del usuario
+docs: agrega HU-01.A1 al SRS — manejo de archivo con formato inválido
 docs: agrega modelo de dominio inicial v0.1
 docs: agrega lista de stakeholders y roles identificados
 docs(requerimientos): agrega atributos de calidad — rendimiento y usabilidad
@@ -213,9 +310,11 @@ Esta etiqueta marca formalmente la primera línea base del proyecto — el punto
 
 - [ ] `README.md` liviano, con síntesis de 3-4 líneas del proyecto y link a la sección de visión/alcance del SRS (ver secc. 4.3), más el modelo de ciclo de vida elegido con su justificación (ver secc. 3.1).
 - [ ] Lista de stakeholders y usuarios, con roles.
-- [ ] Diagrama de contexto inicial en notación DFD Nivel 0 (Mermaid — ver secc. 4.4 e instructivo `docs/instructivos/diagrama-de-contexto-dfd.md`).
-- [ ] Modelo de dominio inicial (Mermaid — diagrama ER o de clases conceptual).
-- [ ] Casos de uso en formato textual Cockburn (ver secc. 4.5) y/o historias de usuario con criterios de aceptación verificables (formato *Como… quiero… para…*, criterios en estilo Given-When-Then si el grupo ya lo maneja). Sin diagrama gráfico de casos de uso en el repositorio — ver por qué en secc. 4.5.
+- [ ] Diagrama de contexto (DFD Nivel 0) y su descomposición en al menos un nivel más (Mermaid — ver secc. 4.4 e instructivo `docs/instructivos/diagrama-de-contexto-dfd.md`).
+- [ ] Modelo de dominio conceptual inicial (Mermaid — diagrama ER o de clases conceptual, ver secc. 4.5).
+- [ ] Selección justificada del/los proceso(s) del DFD que el grupo va a desarrollar en profundidad durante el cuatrimestre, con los procesos descartados y el motivo (ver secc. 4.6).
+- [ ] Requerimientos funcionales (RF) del/los proceso(s) elegido(s), con identificador propio (ver secc. 4.7).
+- [ ] Casos de uso esenciales del/los proceso(s) elegido(s), en formato textual Cockburn, con sus slices (flujo principal detallado + alternativos/excepciones al menos nombrados) y trazados a los RF que realizan (ver secc. 4.8). Historias de usuario de los slices ya desarrollados, con criterios de aceptación verificables en formato Given-When-Then. Sin diagrama gráfico de casos de uso en el repositorio — ver por qué en secc. 4.8.
 - [ ] Atributos de calidad identificados según ISO 25010, con sus escenarios de calidad correspondientes (fuente–estímulo–artefacto–entorno–respuesta–medida), cubriendo más de una condición de entorno por atributo — cantidad exacta a definir por el docente.
 - [ ] SRS consolidado en `docs/requirements/`, con la sección de visión y alcance surgida del canvas de descubrimiento (secc. 4.2-4.3).
 - [ ] Bitácora de uso de IA (`docs/uso-ia.md`) — ver sección 8.
@@ -246,7 +345,7 @@ La presentación es oral y grupal. El docente evalúa, según la rúbrica de la 
 
 Preguntas que conviene poder responder sin dudar: *¿por qué eligieron este alcance y no uno más amplio o más acotado? ¿Qué stakeholder quedó fuera de la primera versión y por qué? ¿Qué requerimiento fue el más difícil de acotar y cómo lo resolvieron?*
 
-> El docente puede pedir, sin previo aviso, que el grupo **dibuje en el pizarrón** el diagrama UML de casos de uso correspondiente a una de las especificaciones textuales entregadas (actor, límite del sistema, `<<include>>`/`<<extend>>`). No entregar el diagrama como artefacto no implica no tener que saberlo — ver secc. 4.5.
+> El docente puede pedir, sin previo aviso, que el grupo **dibuje en el pizarrón** el diagrama UML de casos de uso correspondiente a una de las especificaciones textuales entregadas (actor, límite del sistema, `<<include>>`/`<<extend>>`). No entregar el diagrama como artefacto no implica no tener que saberlo — ver secc. 4.8.
 
 ---
 
@@ -255,7 +354,9 @@ Preguntas que conviene poder responder sin dudar: *¿por qué eligieron este alc
 - [ ] Todos los `.md` están commiteados en el repositorio del grupo (no en Google Docs, Word ni Notion).
 - [ ] Los diagramas están en bloques ```` ```mermaid ```` dentro de archivos `.md`, no como imágenes pegadas.
 - [ ] El SRS cubre requerimientos funcionales y atributos de calidad, con los escenarios de calidad correspondientes a cada atributo.
-- [ ] Cada historia de usuario/caso de uso tiene criterios de aceptación verificables.
+- [ ] Cada historia de usuario tiene criterios de aceptación verificables en formato Given-When-Then, rastreables al slice puntual del caso de uso que detalla.
+- [ ] Cada caso de uso declara qué requerimiento(s) funcional(es) realiza (RF → CU → slice → HU).
+- [ ] La elección de qué proceso(s) desarrollar en profundidad está documentada y justificada.
 - [ ] `docs/uso-ia.md` está actualizado.
 - [ ] El tag `v1.0.0` está creado y publicado (`git push origin v1.0.0`).
 - [ ] Todos los integrantes pueden explicar y defender cualquier decisión del documento, no solo la parte que escribieron.
@@ -271,6 +372,7 @@ Preguntas que conviene poder responder sin dudar: *¿por qué eligieron este alc
 - Sommerville, I. *Ingeniería del Software* (10.ª ed.), capítulos 4 y 5 — ingeniería de requerimientos.
 - Wiegers, K. y Beatty, J. *Software Requirements* (3.ª ed., 2013) — el más práctico para redactar requerimientos concretos.
 - Cockburn, A. *Writing Effective Use Cases* (2000), capítulos 1–3.
+- Jacobson, I., Spence, I., Bittner, K. *Use Case 2.0: The Guide to Succeeding with Use Cases* (2011) — marco de slices, usado en la secc. 4.8 para relacionar casos de uso e historias de usuario.
 - Material de cátedra sobre Diagramas de Flujo de Datos (DFD) — base del instructivo `docs/instructivos/diagrama-de-contexto-dfd.md`, usado para el diagrama de contexto de la sección 4.4.
 - ISO/IEC 25010 — modelo de calidad del producto: [iso25000.com](https://iso25000.com/index.php/normas-iso-25000/iso-25010).
 - Criterio **INVEST** para evaluar historias de usuario (Independiente, Negociable, Valiosa, Estimable, Small, Testeable).
