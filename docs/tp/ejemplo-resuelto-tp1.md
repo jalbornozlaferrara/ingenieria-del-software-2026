@@ -417,23 +417,72 @@ Criterios de aceptación:
 
 > **Nota del grupo sobre E2** (falla de notificación): el Given de ese slice describe una falla del sistema de notificaciones, un actor no humano — al momento de desarrollarlo, evaluar si conviene forzarlo al formato "Como [actor], quiero..." o especificarlo directamente como requerimiento técnico sin el molde de historia de usuario.
 
+> **Nota de diseño sobre RF-06 (fuera de alcance de TP1).** `RF-06` dice *qué* tiene que pasar ("limitar el cómputo según la cuota"), deliberadamente sin decir *cómo* se mide — eso es una decisión de TP3/TP4, no del SRS. Dos caminos posibles, evaluados por el grupo para más adelante: (a) costo estimado por tipo de análisis (una tabla fija de "unidades de cómputo" por tipo, simple y predecible), o (b) medición real de recursos consumidos (más precisa, exige instrumentar el motor de análisis). Cualquiera de las dos formas tiene que resolver, además, que dos solicitudes casi simultáneas del mismo investigador/a no descuenten ambas sobre la misma cuota restante — ese requisito sí se deja escrito ahora, como escenario de calidad (ver secc. 8, escenario de Fiabilidad en entorno degradado), sin comprometerse todavía con el mecanismo (transacción, bloqueo, etc.) que lo va a resolver.
+
 ---
 
-## 8. Atributos de calidad (ISO 25010)
+## 8. Atributos de calidad — escenarios (ISO 25010)
 
-**Fiabilidad — Tolerancia a fallos**
+Cada escenario se redacta con los seis campos de la técnica (fuente del estímulo, estímulo, entorno, artefacto, respuesta, medida de respuesta), cubriendo más de una condición de entorno por atributo — normal, sobrecarga y degradado.
 
-| Entorno | Estímulo | Respuesta esperada | Medida |
-|---|---|---|---|
-| Operación normal (< 20 análisis concurrentes) | Investigador/a solicita análisis sobre dataset de 500 MB y el sistema no puede completarlo por falta de cómputo | El sistema detecta la situación y notifica sin corromper datos ni cuota | 100% de los análisis fallidos dejan dataset y cuota en estado consistente, verificable por auditoría |
-| Pico de uso (fin de campaña de campo, cargas simultáneas) | Muchos investigadores cargan datasets y solicitan análisis al mismo tiempo | El sistema encola las solicitudes sin perder ninguna y sin bloquear nuevas cargas | 0% de solicitudes perdidas con hasta 50 solicitudes simultáneas |
+### Fiabilidad — Tolerancia a fallos
 
-**Eficiencia de desempeño — Comportamiento temporal**
+**Escenario 1 — entorno normal**
 
-| Entorno | Estímulo | Respuesta esperada | Medida |
-|---|---|---|---|
-| Operación normal | Carga de archivo de hasta 50 MB | El sistema valida formato y rangos | Se completa en menos de 10 segundos |
-| Uso pico (10 cargas concurrentes) | Carga de archivo de hasta 50 MB | El sistema valida formato y rangos | Se completa en menos de 30 segundos |
+| Campo | Contenido |
+|---|---|
+| Fuente del estímulo | Investigador/a |
+| Estímulo | Solicita un análisis sobre un dataset de 500 MB |
+| Entorno | Operación normal (menos de 20 análisis concurrentes en el sistema) |
+| Artefacto | Módulo de ejecución de análisis (Proceso 2) |
+| Respuesta | El sistema detecta que no puede completar el análisis por falta de cómputo, lo aborta de forma controlada y notifica al investigador/a, sin corromper el dataset ni la cuota |
+| Medida de respuesta | 100% de los análisis fallidos dejan dataset y cuota en estado consistente, verificable por auditoría |
+
+**Escenario 2 — entorno de sobrecarga**
+
+| Campo | Contenido |
+|---|---|
+| Fuente del estímulo | Múltiples investigadores/as |
+| Estímulo | Cargan datasets y solicitan análisis simultáneamente (fin de una campaña de campo) |
+| Entorno | Pico de uso — hasta 50 solicitudes simultáneas |
+| Artefacto | Cola de análisis y módulo de carga de datos (Procesos 1 y 2) |
+| Respuesta | El sistema encola todas las solicitudes sin perder ninguna y sin bloquear nuevas cargas de datos |
+| Medida de respuesta | 0% de solicitudes perdidas con hasta 50 solicitudes simultáneas |
+
+**Escenario 3 — entorno degradado (alta concurrencia sobre el mismo recurso)**
+
+| Campo | Contenido |
+|---|---|
+| Fuente del estímulo | Dos solicitudes de análisis del mismo investigador/a, o de distintos investigadores compitiendo por el cómputo del laboratorio |
+| Estímulo | Llegan casi simultáneamente cuando la cuota restante del investigador/a alcanza para una sola de las dos |
+| Entorno | Degradado — alta concurrencia sobre el mismo registro de cuota |
+| Artefacto | Módulo de verificación y descuento de cuota (CU-00, incluido por CU-02) |
+| Respuesta | El sistema aprueba una sola de las dos solicitudes y rechaza la otra por cuota insuficiente — ninguna combinación de solicitudes concurrentes puede descontar más de lo que la cuota restante permite |
+| Medida de respuesta | 0% de casos en que la cuota consumida supere la cuota asignada, bajo una prueba de concurrencia con al menos 10 solicitudes simultáneas sobre el mismo usuario |
+
+### Eficiencia de desempeño — Comportamiento temporal
+
+**Escenario 1 — entorno normal**
+
+| Campo | Contenido |
+|---|---|
+| Fuente del estímulo | Investigador/a |
+| Estímulo | Carga un archivo de hasta 50 MB |
+| Entorno | Operación normal (sin otras cargas concurrentes) |
+| Artefacto | Módulo de carga y validación (Proceso 1) |
+| Respuesta | El sistema valida formato y rangos del archivo |
+| Medida de respuesta | Se completa en menos de 10 segundos |
+
+**Escenario 2 — entorno de sobrecarga**
+
+| Campo | Contenido |
+|---|---|
+| Fuente del estímulo | Investigador/a (uno entre varios) |
+| Estímulo | Carga un archivo de hasta 50 MB |
+| Entorno | Uso pico — 10 cargas concurrentes de otros investigadores en simultáneo |
+| Artefacto | Módulo de carga y validación (Proceso 1) |
+| Respuesta | El sistema valida formato y rangos del archivo |
+| Medida de respuesta | Se completa en menos de 30 segundos |
 
 ---
 
