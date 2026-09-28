@@ -20,7 +20,8 @@ Si es la primera vez que usás Git, no hace falta que entiendas todavía qué ha
 ```
 docs/
 ├── tp/                     ← una guía por Trabajo Práctico
-│   └── tp1-requerimientos.md
+│   ├── tp1-requerimientos.md
+│   └── tp2-interfaz-rnf.md
 ├── instructivos/           ← cómo trabajamos: Git, Markdown, Mermaid, GitHub Pages
 │   └── git-github-y-documentacion.md
 └── procedimientos/         ← reglas transversales a todos los TP
