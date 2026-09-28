@@ -44,8 +44,8 @@ El grupo elige cinco atributos de calidad para su proyecto: los que considere m�
 
 Para cada uno de los cinco atributos:
 
-- Define entre uno y tres escenarios de atributo de calidad.
-- Si el atributo proviene de la norma ISO/IEC 25010:2023, cada escenario indica la subcaracterística que pone a prueba. Con dos escenarios en una misma característica, el grupo puede elegir ambos para la misma subcaracterística o uno para cada una de dos subcaracterísticas distintas. Con tres escenarios rige el mismo criterio.
+- Define entre uno y tres escenarios de atributo de calidad, con un mínimo de un escenario por cada uno de los cinco atributos elegidos.
+- Si el grupo usa la taxonomía ISO/IEC 25010:2023, el atributo de calidad elegido **es la subcaracterística**. Se debe especificar como mínimo un escenario por cada una de las cinco subcaracterísticas elegidas.
 - Los escenarios deben priorizar el impacto potencial sobre decisiones de diseño del sistema, por sobre la cantidad.
 - Los escenarios deben ubicarse mayoritariamente en entornos degradados o en condiciones que resulten significativas para el tipo de sistema que el grupo está modelando, y no en el camino normal de uso, es decir, aquel en el que el sistema se comporta simplemente como se espera que lo haga.
 
