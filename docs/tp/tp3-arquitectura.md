@@ -73,9 +73,9 @@ Estos tres conceptos se usan en niveles de decisión distintos:
 - Un **estilo** arquitectónico es un conjunto de principios que da un marco abstracto para toda una familia de sistemas: define el vocabulario de componentes y conectores que se pueden usar y las restricciones sobre cómo se combinan. Responde a la pregunta *¿cómo se organiza el sistema en su conjunto?* Es la primera decisión de diseño. Ejemplos: cliente-servidor, repositorio, orientada a eventos.
 - Un **patrón** arquitectónico es una solución concreta y reutilizable a un problema recurrente, dentro de un contexto particular, con las consideraciones que afectan la decisión. Responde a la pregunta *¿cómo resuelvo este problema puntual?* Puede aplicarse dentro de uno o más estilos. Ejemplos: MVC (Modelo-Vista-Controlador), hexagonal, capas.
 
-Los estilos y patrones **agrupan varias tácticas**: elegir uno es adoptar de una vez un conjunto de tácticas que ya funcionan juntas. Eso tiene ventajas, porque mejora ciertos atributos, pero también desventajas: lo que un estilo o patrón mejora suele costar algo en otro atributo. Por eso las tablas de este TP indican, para cada uno, **qué sacrifica**.
+Los estilos y patrones ofrecen estructuras donde se pueden aplicar varias tácticas, pero no las garantizan: elegir cliente-servidor no da alta disponibilidad por sí solo, porque además hacen falta, por ejemplo, redundancia y detección de fallos. Las tácticas se seleccionan y se concretan en decisiones de arquitectura; el estilo o el patrón es la estructura que facilita aplicarlas. Cada elección mejora ciertos atributos y suele costar algo en otro, y por eso las tablas de este TP indican, para cada estilo o patrón, **qué sacrifica**.
 
-Regla práctica: el estilo organiza el sistema entero, por lo que **se hace visible sobre todo en la vista de contenedores**. El patrón resuelve un problema dentro de una aplicación, por lo que **se hace visible en la vista de componentes**. Un matiz: algunos patrones, como el broker, introducen piezas que se ejecutan por separado y por eso también aparecen en la vista de contenedores. Las tácticas que dependen de la infraestructura (réplicas, más recursos, separación de servidores) suelen hacerse visibles en la vista de despliegue.
+Regla práctica: el estilo organiza el sistema entero, por lo que **se hace visible sobre todo en la vista de contenedores**. El patrón resuelve un problema dentro de una aplicación, por lo que **se hace visible en la vista de componentes**. Es una orientación, no una regla fija: lo que decide en qué vista se ve una decisión es si separa procesos o solo organiza el interior de uno. Un estilo como tuberías y filtros puede existir dentro de un único proceso, y entonces se ve en componentes; algunos patrones, como el broker, introducen piezas que se ejecutan por separado y por eso también aparecen en la vista de contenedores. Las tácticas que dependen de la infraestructura (réplicas, más recursos, separación de servidores) suelen hacerse visibles en la vista de despliegue.
 
 ### 3.3 Paso 1 — Drivers arquitectónicos
 
@@ -112,7 +112,7 @@ Si el grupo propone una táctica que no está en la tabla, lo aclara. Una tácti
 **Subcaracterísticas de ISO/IEC 25010:2023 sin correspondencia en el libro:**
 
 - Escalabilidad, coexistencia, instalabilidad, adaptabilidad y reemplazabilidad: no tienen atributo propio. El grupo las ubica en el atributo más cercano (por ejemplo, escalabilidad se trabaja con las tácticas de desempeño) y lo justifica en la decisión que corresponda.
-- Completitud, corrección y pertinencia funcional: corresponden a los requerimientos funcionales, no a decisiones de calidad.
+- Completitud, corrección y pertinencia funcional: son subcaracterísticas de calidad y el grupo pudo haberlas elegido en el TP2, pero sus escenarios rara vez condicionan la estructura del sistema. Si el escenario no lo hace, no es un driver; se verifica con los criterios de aceptación de las historias de usuario.
 - Reconocibilidad de la adecuación, compromiso del usuario e inclusividad: se resuelven sobre todo en la interfaz (TP2). Si el escenario no condiciona la estructura, no es un driver.
 
 **Tabla 2. Tácticas explicadas.**
@@ -206,7 +206,7 @@ Si el grupo propone una táctica que no está en la tabla, lo aclara. Una tácti
 
 El estilo define cómo se organiza el sistema en su conjunto y es la primera decisión de diseño. El grupo:
 
-1. Revisa la **Tabla 3** y elige el **estilo base**: el que define la estructura general, es decir, los contenedores. La **Tabla 4** resume las restricciones y reglas que ese estilo impone, para que el grupo compruebe que su diagrama las respeta.
+1. Revisa la **Tabla 3** y elige el **estilo base**: el que define la estructura general, es decir, los contenedores. La **Tabla 4** resume las restricciones y reglas de la variante habitual de cada estilo, para que el grupo compruebe que su diagrama las respeta.
 2. Agrega estilos adicionales **solo para las partes donde un escenario lo exige** (ver "Estilos puros e híbridos").
 3. Dibuja la **primera versión de la vista de contenedores** con lo decidido.
 
@@ -226,12 +226,12 @@ El estilo define cómo se organiza el sistema en su conjunto y es la primera dec
 | SOA (arquitectura orientada a servicios) | Servicios que se integran a través de un bus de comunicación | Orquestar e integrar sistemas existentes | Dependencia del bus; latencia | Servicios conectados mediante un bus | Interfaces de servicio y adaptadores |
 | Peer-to-peer (entre pares) | Nodos iguales que actúan como cliente y servidor | Resiliencia y reparto de procesamiento | Coordinación y seguridad más difíciles | Nodos iguales conectados entre sí | Componentes de cliente y de servidor en el mismo contenedor |
 
-**Tabla 4. Restricciones y reglas de cada estilo.** Una arquitectura solo puede decir que usa un estilo si respeta lo que ese estilo exige. La última columna indica qué mirar en el diagrama para comprobarlo. Es una propuesta pedagógica de resumen, no un esquema cerrado.
+**Tabla 4. Restricciones y reglas de cada estilo.** Describe la variante habitual de cada estilo. Si el grupo adopta otra variante, la declara y justifica en la decisión correspondiente. La última columna indica qué mirar en el diagrama para comprobarlo. Es una propuesta pedagógica de resumen, no un esquema cerrado.
 
 | Estilo | Restricciones (lo que no se permite) | Reglas (lo que se debe cumplir) | Cómo comprobarlo en el diagrama |
 |---|---|---|---|
 | Cliente-servidor | Los clientes no se comunican entre sí. El servidor no inicia la comunicación con el cliente (salvo para notificaciones). El cliente no accede directamente a la base de datos | El cliente inicia siempre la comunicación. El servidor expone una interfaz definida. La lógica y los datos compartidos viven en el servidor | No hay flechas entre clientes ni de la base de datos hacia el cliente |
-| Repositorio | Las aplicaciones no se comunican directamente entre sí: solo lo hacen a través del almacén central | El almacén es la fuente única de los datos. El acceso concurrente se controla (por ejemplo, con transacciones). El esquema de datos es conocido por todos los que lo usan | Toda comunicación entre contenedores de aplicación pasa por la base de datos |
+| Repositorio | En la variante habitual, las aplicaciones no se comunican directamente entre sí: lo hacen a través del almacén central | El almacén es la fuente única de los datos. El acceso concurrente se controla (por ejemplo, con transacciones). El esquema de datos es conocido por todos los que lo usan | Toda comunicación entre contenedores de aplicación pasa por la base de datos |
 | Tuberías y filtros | Un filtro no conoce a los demás ni comparte estado con ellos. No hay retornos hacia etapas anteriores | Cada filtro hace una sola transformación. La salida de un filtro es la entrada del siguiente. Todas las etapas usan un formato de datos común | Una cadena de flechas en un solo sentido, sin atajos entre filtros |
 | Orientada a eventos | Quien produce un evento no llama directamente a quien lo consume. El productor no espera la respuesta | Los eventos tienen un nombre y una estructura definida. Los consumidores son independientes entre sí. Se define qué pasa si un evento no se procesa (reintento o descarte) | Productor y consumidor se conectan solo al canal o a la cola, nunca entre ellos |
 | Microservicios | Un servicio no accede a la base de datos de otro. No se comparte el esquema de datos entre servicios | Cada servicio tiene una responsabilidad acotada y su propia base de datos. Se comunican solo por sus interfaces. Se pueden desplegar de forma independiente | Una base de datos por servicio y ninguna flecha de un servicio hacia la base de otro |
@@ -267,18 +267,18 @@ Dentro de cada contenedor, el grupo elige los patrones que resuelven problemas p
 | Pizarra | Construir una solución de forma incremental con aportes de varios agentes especializados | Problemas sin algoritmo cerrado | Control difícil de seguir | Una pizarra y los agentes que contribuyen |
 | Serverless (sin servidor) | No gestionar infraestructura; el proveedor ejecuta y escala funciones | Escalado variable; menor costo operativo | Dependencia del proveedor; límites de ejecución | Funciones gestionadas por el proveedor |
 
-**Tabla 6. Restricciones y reglas de cada patrón.** Es una propuesta pedagógica de resumen, no un esquema cerrado.
+**Tabla 6. Restricciones y reglas de cada patrón.** Describe la variante habitual de cada patrón. Si el grupo adopta otra variante (por ejemplo, capas relajadas, o una versión de MVC propia de un marco de trabajo), la declara y justifica en la decisión correspondiente. Es una propuesta pedagógica de resumen, no un esquema cerrado.
 
 | Patrón | Restricciones (lo que no se permite) | Reglas (lo que se debe cumplir) | Cómo comprobarlo en el diagrama |
 |---|---|---|---|
-| Capas | Una capa no depende de las superiores. No se saltean capas sin justificarlo | Cada capa tiene una responsabilidad (presentación, servicios, dominio, acceso a datos). Cada capa usa solo a la inmediatamente inferior | Todas las flechas entre capas van hacia abajo |
-| MVC | El modelo no conoce a la vista ni al controlador. La vista no modifica el modelo directamente | El controlador interpreta las acciones del usuario y actualiza el modelo. La vista muestra el estado del modelo | No hay flechas del modelo hacia la vista ni el controlador, salvo la notificación de cambios |
+| Capas | Una capa no depende de las superiores. No se saltean capas sin justificarlo | Cada capa tiene una responsabilidad (presentación, servicios, dominio, acceso a datos). En capas estrictas, cada capa usa solo a la inmediatamente inferior; en capas relajadas se permiten saltos controlados | Todas las flechas entre capas van hacia abajo |
+| MVC | El modelo no conoce a la vista ni al controlador. En la variante clásica, la vista no modifica el modelo directamente | El controlador interpreta las acciones del usuario y actualiza el modelo. La vista muestra el estado del modelo | No hay flechas del modelo hacia la vista ni el controlador, salvo la notificación de cambios |
 | MVVM | El modelo de vista no conoce a la vista. La vista no contiene lógica de negocio | La vista se enlaza al modelo de vista; el modelo de vista usa al modelo | La vista depende solo del modelo de vista |
 | Hexagonal | El núcleo de dominio no depende de la base de datos, de la interfaz ni de servicios externos | Todas las dependencias apuntan hacia el núcleo, a través de puertos (interfaces definidas por el núcleo) que los adaptadores implementan | Ninguna flecha sale del núcleo hacia un adaptador concreto, solo hacia puertos |
 | CQRS | Las consultas no modifican datos. Los comandos no devuelven datos de consulta | Los comandos (escrituras) y las consultas (lecturas) usan modelos separados, que se mantienen sincronizados | Caminos separados para lectura y escritura |
 | Broker | Emisores y receptores no se conocen: no se llaman directamente | Los mensajes tienen un formato definido. El broker define cómo se entregan (por ejemplo, al menos una vez) | Ninguna flecha directa entre emisor y receptor |
 | Pizarra | Los agentes no se comunican entre sí | Los agentes leen y escriben solo en la pizarra común | Los agentes se conectan únicamente a la pizarra |
-| Serverless | Una función no guarda estado entre ejecuciones | Las funciones son breves; el estado se guarda fuera, en un almacén | Las funciones se conectan a un almacén de datos |
+| Serverless | Una función no conserva estado propio entre ejecuciones | Las funciones son breves; el estado se guarda fuera, en un almacén | Las funciones se conectan a un almacén de datos |
 
 **Aspectos transversales.** Además de los patrones, el grupo decide qué aspectos transversales adopta. Son decisiones que atraviesan varias partes del sistema y no pertenecen a una sola: la autenticación y la autorización (quién puede entrar y qué puede hacer), la auditoría (un registro de quién hizo qué), la gestión de excepciones (qué hacer ante un error), la instrumentación (el monitoreo del sistema), la interoperabilidad (usar estándares de comunicación) y las notificaciones (avisar al usuario o al administrador). Muchas tácticas de seguridad y de disponibilidad se implementan como aspectos transversales. En la vista de componentes se dibujan como componentes propios que usan los demás; si hace falta un servicio aparte (por ejemplo, un servicio de identidad o de correo), en la vista de contenedores aparecen como contenedor o como sistema externo. Los que el grupo descarta quedan registrados con su motivo.
 
@@ -289,7 +289,7 @@ Dentro de cada contenedor, el grupo elige los patrones que resuelven problemas p
 
 **Conflictos.** Verifica que las tácticas de escenarios distintos no entren en conflicto. Ejemplos: los datos redundantes mejoran la disponibilidad pero complican la seguridad; los componentes grandes y acoplados mejoran el rendimiento pero reducen la mantenibilidad.
 
-**Decisiones de arquitectura.** Cada decisión significativa (agregar un contenedor, elegir un estilo o un patrón, elegir una tecnología con impacto en la estructura) se registra en la sección de decisiones del Documento de Especificación de Arquitectura (secc. 5 y Anexo A), con un identificador `DA-01`, `DA-02`, y así sucesivamente (DA significa *decisión de arquitectura*). Cada driver debe tener al menos una decisión que lo atienda. Cada decisión indica el escenario que la motiva, las tácticas, el estilo o patrón elegido y dónde aplica, al menos una alternativa descartada, las consecuencias (qué se gana y qué se sacrifica) y los elementos de las vistas que afecta. El Anexo B tiene un ejemplo.
+**Decisiones de arquitectura.** Cada decisión significativa (agregar un contenedor, elegir un estilo o un patrón, elegir una tecnología con impacto en la estructura) se registra en la sección de decisiones del Documento de Especificación de Arquitectura (secc. 5 y Anexo A), con un identificador `DA-01`, `DA-02`, y así sucesivamente (DA significa *decisión de arquitectura*). Cada driver debe tener al menos una decisión que lo atienda. Cada decisión indica el escenario que la motiva, las tácticas, el estilo o patrón elegido y dónde aplica, al menos una alternativa descartada, las consecuencias (qué se gana y qué se sacrifica), los elementos de las vistas que afecta y **cómo se verifica** que se cumple la medida del escenario. Las medidas se toman de los escenarios del TP2: no se inventan al diseñar la solución. Una decisión puede atender más de un driver. El Anexo B tiene un ejemplo.
 
 > En muchos equipos cada decisión se guarda como un archivo individual llamado ADR (*architecture decision record*, registro de decisión de arquitectura). En este TP las decisiones van dentro del documento, para mantener en un solo lugar la estrategia, las vistas y las decisiones.
 
@@ -334,6 +334,8 @@ Cada vista se entrega con su **diagrama** y con un **catálogo**: una tabla de e
 
 **Contenedor, componente y nodo.** Un contenedor es software que se ejecuta por separado: una aplicación o un almacén de datos. Un componente es una parte interna de un contenedor y no se despliega por separado. Un nodo es la infraestructura donde corre un contenedor. No hay que confundir el contenedor de C4 con un contenedor de Docker (una herramienta que ejecuta una aplicación aislada, con todo lo que necesita para funcionar): un contenedor de Docker es una forma de ejecutar un contenedor de C4 y, en el diagrama de despliegue, se dibuja como un nodo.
 
+**Contenedor o componente: una decisión con costo.** Sacar una parte del sistema a un proceso aparte (convertir un componente en contenedor) tiene un costo: aparece comunicación por red, nuevas fallas posibles y un programa más que operar. Por eso un filtro, un servicio interno o un módulo se mantiene como componente, salvo que un escenario exija separarlo: aislar fallas, escalarlo por separado o mantenerlo disponible aunque otra parte caiga.
+
 **Cola y almacén de datos: qué los diferencia.** Los dos se dibujan como contenedores porque son programas que corren por separado y guardan información, pero cumplen funciones distintas:
 
 | | Cola de mensajes | Almacén de datos (base de datos) |
@@ -372,6 +374,7 @@ Una cola dentro del propio proceso (por ejemplo, la estructura de cola del lengu
 - Cada contenedor indica **nombre, tecnología y responsabilidad** en una frase.
 - Los almacenes de datos y las colas se dibujan como contenedores.
 - Los elementos que existen por una táctica o un patrón y se ejecutan por separado (por ejemplo, una cola de mensajes o una caché compartida) se dibujan como contenedores y se rastrean a una decisión de arquitectura.
+- Una parte del sistema es un contenedor solo si se ejecuta por separado y hay una razón para ello; si no, es un componente.
 - **Un contenedor no contiene otros contenedores.** Si algo contiene otras piezas que se ejecutan por separado, se dibujan como contenedores distintos.
 - No se dibujan componentes ni clases dentro de un contenedor.
 - No hay elementos aislados: todo contenedor se relaciona con al menos otro elemento.
@@ -394,7 +397,7 @@ Una cola dentro del propio proceso (por ejemplo, la estructura de cola del lengu
 
 **Reglas comunes de las relaciones.**
 - Toda relación es una **flecha con etiqueta** que dice qué se hace, con un verbo ("Solicita análisis", "Lee y escribe").
-- La flecha va **desde quien inicia** la comunicación hacia quien la recibe. No se dibuja la respuesta de vuelta.
+- La flecha va **desde quien inicia** la comunicación hacia quien la recibe. No se dibuja la respuesta de vuelta. En una cola, la flecha del consumidor hacia la cola indica que el consumidor es quien la consulta; no indica el sentido en que viaja el mensaje.
 - Cuando la relación cruza un límite de proceso, se indica el protocolo: por ejemplo HTTPS (web cifrada), SQL (bases de datos) o AMQP (protocolo de mensajería de las colas).
 - No se dibujan todas las relaciones posibles, solo las que importan para entender la arquitectura.
 
@@ -413,7 +416,7 @@ Una cola dentro del propio proceso (por ejemplo, la estructura de cola del lengu
 |---|---|---|
 | Cómo se comunican | Mensajes o solicitudes entre procesos, por red | Llamadas internas dentro del mismo proceso |
 | Velocidad | Más lenta | Muy rápida |
-| Qué pasa si falla | Puede fallar (se corta la red o el otro contenedor está caído) y esa falla puede afectar a quien lo llama: hay que preverlo (reintentos, tiempos de espera) | Si falla, falla todo el proceso |
+| Qué pasa si falla | Puede fallar (se corta la red o el otro contenedor está caído) y esa falla puede afectar a quien lo llama: hay que preverlo (reintentos, tiempos de espera) | Una falla no controlada puede detener todo el proceso; si el error se maneja, queda contenido |
 | Formato de los datos | Acuerdo de intercambio (JSON, SQL, mensajes) | No hace falta |
 | En el diagrama | Etiqueta con verbo y protocolo | Etiqueta con verbo, sin protocolo |
 
@@ -500,7 +503,7 @@ La IA puede sugerir estructuras plausibles pero arquitectónicamente incorrectas
 - [ ] Patrones elegidos por contenedor, con justificación y comprobación de sus restricciones.
 - [ ] Aspectos transversales analizados, incluidos los descartados con su motivo.
 - [ ] Tabla de cobertura: cómo cubre la arquitectura cada driver y qué sacrifica.
-- [ ] Decisiones de arquitectura (`DA-xx`), con al menos una por driver, con alternativas y consecuencias.
+- [ ] Decisiones de arquitectura (`DA-xx`), con al menos una por driver, con alternativas, consecuencias y forma de verificación.
 - [ ] Vista de contenedores C4, global, con su catálogo, que cumple las reglas de las secc. 4.4, 4.6 y 4.7 y muestra el estilo elegido.
 - [ ] Vista de componentes C4 de cada contenedor que implementa los procesos elegidos, con su catálogo, que cumple las reglas de las secc. 4.5, 4.6 y 4.7 y muestra los patrones y aspectos transversales.
 - [ ] Diagrama de despliegue C4 del entorno de producción, con su catálogo de nodos, que cumple las reglas de las secc. 4.6, 4.7 y 4.8 y muestra dónde se ejecuta cada contenedor.
@@ -575,6 +578,7 @@ En la defensa se podrá solicitar al grupo que:
   - A favor: [atributos que mejoran]
   - En contra: [atributos que se sacrifican, costos, riesgos]
 - **Elementos afectados:** [contenedores o componentes que crea o modifica]
+- **Cómo se verifica:** [prueba o evidencia que muestra que se cumple la medida del escenario]
 ```
 
 **Ejemplo:**
@@ -605,6 +609,7 @@ En la defensa se podrá solicitar al grupo que:
   - En contra: hay un contenedor más que operar; el estado de un análisis pasa
     a ser eventualmente consistente.
 - **Elementos afectados:** contenedores "Cola de mensajes" y "Motor de análisis".
+- **Cómo se verifica:** detener el motor, enviar solicitudes, reiniciarlo y comprobar que todas las solicitudes confirmadas se procesan, sin pérdidas ni duplicados.
 ```
 
 ---
