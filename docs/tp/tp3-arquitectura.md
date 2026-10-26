@@ -19,7 +19,7 @@ Al finalizar este trabajo práctico, el grupo deberá ser capaz de:
 - Recorrer el camino que va de los escenarios a las tácticas, de las tácticas al estilo y de este a los patrones, justificando lo que cada elección mejora y lo que sacrifica.
 - Reconocer cuándo una arquitectura combina varios estilos y justificar cada combinación.
 - Considerar los aspectos transversales (seguridad, gestión operativa y comunicación) que atraviesan la solución.
-- Representar la arquitectura con las vistas de **contenedores** y de **componentes** del modelo C4, aplicando las reglas de construcción de cada una, en Mermaid.
+- Representar la arquitectura con las vistas de **contenedores**, de **componentes** y de **despliegue** del modelo C4, aplicando las reglas de construcción de cada una, en Mermaid.
 - Documentar las decisiones y las vistas en un **Documento de Especificación de Arquitectura**.
 - Mantener la trazabilidad entre escenario, táctica, estilo o patrón, decisión, elemento del modelo C4 e historia de usuario.
 - Utilizar inteligencia artificial (IA) como apoyo para evaluar alternativas de arquitectura, ejerciendo el criterio propio del equipo y documentando el proceso.
@@ -32,12 +32,12 @@ Este TP es continuación directa del proyecto desarrollado en el TP1 y el TP2. N
 
 La arquitectura se define para el o los procesos elegidos en el TP1. El resto del sistema se representa como caja negra: como sistema externo o como contenedor sin detalle interno.
 
-**Alcance de este TP.** El foco está en las vistas de contenedores y de componentes. La vista de clases y de código, y los diagramas de despliegue, **no se trabajan en este TP**.
+**Alcance de este TP.** El foco está en las vistas de contenedores y de componentes, más un diagrama de despliegue del entorno de producción. La vista de clases y de código **no se trabaja en este TP**.
 
 El trabajo se organiza en dos partes que se retroalimentan, ambas obligatorias:
 
 - Parte A: De los atributos de calidad a la elección de estilos y patrones.
-- Parte B: Representación de la arquitectura en contenedores y componentes.
+- Parte B: Representación de la arquitectura en contenedores, componentes y despliegue.
 
 Todo el resultado se reúne en un único documento. Recomendación: el trabajo se realiza en una rama del repositorio y se integra mediante Pull Request con revisión cruzada del grupo, según el instructivo de Git y GitHub.
 
@@ -75,7 +75,7 @@ Estos tres conceptos se usan en niveles de decisión distintos:
 
 Los estilos y patrones **agrupan varias tácticas**: elegir uno es adoptar de una vez un conjunto de tácticas que ya funcionan juntas. Eso tiene ventajas, porque mejora ciertos atributos, pero también desventajas: lo que un estilo o patrón mejora suele costar algo en otro atributo. Por eso las tablas de este TP indican, para cada uno, **qué sacrifica**.
 
-Regla práctica: el estilo organiza el sistema entero, por lo que **se hace visible sobre todo en la vista de contenedores**. El patrón resuelve un problema dentro de una aplicación, por lo que **se hace visible en la vista de componentes**. Un matiz: algunos patrones, como el broker, introducen piezas que se ejecutan por separado y por eso también aparecen en la vista de contenedores.
+Regla práctica: el estilo organiza el sistema entero, por lo que **se hace visible sobre todo en la vista de contenedores**. El patrón resuelve un problema dentro de una aplicación, por lo que **se hace visible en la vista de componentes**. Un matiz: algunos patrones, como el broker, introducen piezas que se ejecutan por separado y por eso también aparecen en la vista de contenedores. Las tácticas que dependen de la infraestructura (réplicas, más recursos, separación de servidores) suelen hacerse visibles en la vista de despliegue.
 
 ### 3.3 Paso 1 — Drivers arquitectónicos
 
@@ -297,24 +297,25 @@ Dentro de cada contenedor, el grupo elige los patrones que resuelven problemas p
 
 | Escenario (TP2) | Atributo (Tabla 1) | Tácticas | Estilo o patrón | Decisión | Elemento C4 |
 |---|---|---|---|---|---|
-| `EC-02` | Disponibilidad | Introducir concurrencia; acotar colas | Estilo orientada a eventos; patrón broker | `DA-01` | Contenedores "Cola de mensajes" y "Motor de análisis" |
+| `EC-02` | Disponibilidad | Introducir concurrencia; acotar colas | Estilo orientada a eventos; patrón broker | `DA-01` | Contenedores "Cola de mensajes" y "Motor de análisis"; nodo "Servidor de aplicación" |
 
-Esta tabla extiende la cadena de trazabilidad de los TP anteriores. Todo driver debe llegar a al menos un contenedor o componente.
+Esta tabla extiende la cadena de trazabilidad de los TP anteriores. Todo driver debe llegar a al menos un contenedor, componente o nodo de despliegue.
 
 ---
 
-## 4. Parte B: Contenedores y componentes (modelo C4)
+## 4. Parte B: Contenedores, componentes y despliegue (modelo C4)
 
-El modelo C4 (por *Context, Containers, Components, Code*: contexto, contenedores, componentes y código) describe la arquitectura en niveles de zoom sucesivos.
+El modelo C4 (por *Context, Containers, Components, Code*: contexto, contenedores, componentes y código) describe la arquitectura en niveles de zoom sucesivos. A esos niveles se suma el diagrama de despliegue, que muestra en qué infraestructura se ejecuta cada contenedor.
 
 ### 4.1 Alcance de cada vista
 
 - **Contexto:** se toma del TP1 (diagrama de contexto, es decir, el diagrama de flujo de datos —DFD— de Nivel 0) y se incluye como encuadre, con los mismos actores y entidades externas.
 - **Vista de contenedores: una sola, global, para todo el sistema.** Muestra todos los contenedores y cómo se comunican. Los que implementan los procesos elegidos se detallan; el resto del sistema aparece como caja negra. Si el diagrama se vuelve ilegible, se puede dividir por proceso, pero siempre debe existir esa vista global.
 - **Vista de componentes: una por cada contenedor que implementa los procesos elegidos.** Hace zoom en un solo contenedor. No se hace para bases de datos, colas ni contenedores que no implementan los procesos elegidos.
+- **Vista de despliegue: una sola, del entorno de producción.** Muestra en qué nodos (servidores, navegadores, servicios) se ejecuta cada contenedor de la vista de contenedores, cuántas instancias hay y cómo se comunican esos nodos. No se hacen diagramas de otros entornos, como desarrollo o pruebas.
 - **Clases y código:** no se trabajan en este TP.
 
-Cada vista se entrega con su **diagrama** y con un **catálogo**: una tabla de elementos (nombre, tecnología y responsabilidad) y una tabla de relaciones (origen, destino, qué se comunica, tipo de comunicación y protocolo). Es lo que se acostumbra en la documentación de arquitectura real, porque un diagrama solo no alcanza para entender cada pieza. Como simplificación pedagógica, si el diagrama ya muestra la tecnología de cada elemento y el protocolo de cada relación (como permite Mermaid), no hace falta repetirlos en las tablas: el catálogo puede limitarse a la responsabilidad de cada elemento y a qué se comunica en cada relación.
+Cada vista se entrega con su **diagrama** y con un **catálogo**: una tabla de elementos (nombre, tecnología y responsabilidad) y una tabla de relaciones (origen, destino, qué se comunica, tipo de comunicación y protocolo). Es lo que se acostumbra en la documentación de arquitectura real, porque un diagrama solo no alcanza para entender cada pieza. Como simplificación pedagógica, si el diagrama ya muestra la tecnología de cada elemento y el protocolo de cada relación (como permite Mermaid), no hace falta repetirlos en las tablas: el catálogo puede limitarse a la responsabilidad de cada elemento y a qué se comunica en cada relación. En la vista de despliegue, el catálogo es una tabla de nodos: qué contenedores ejecuta cada uno, cuántas instancias hay y qué escenario o decisión lo justifica.
 
 ### 4.2 Elementos y notación
 
@@ -328,8 +329,10 @@ Cada vista se entrega con su **diagrama** y con un **catálogo**: una tabla de e
 | Contenedor (cola) | Un canal o cola de mensajes | `ContainerQueue` |
 | Límite del contenedor | Contiene los componentes de un contenedor | `Container_Boundary` |
 | Componente | Una agrupación coherente de funcionalidad dentro de un contenedor | `Component` |
+| Nodo de despliegue | La infraestructura donde se ejecutan los contenedores: un servidor, un entorno de ejecución, el navegador del usuario o un servicio de la nube. Un nodo puede contener otros nodos | `Deployment_Node` |
 | Relación | Una comunicación entre dos elementos | `Rel` |
 
+**Contenedor, componente y nodo.** Un contenedor es software que se ejecuta por separado: una aplicación o un almacén de datos. Un componente es una parte interna de un contenedor y no se despliega por separado. Un nodo es la infraestructura donde corre un contenedor. No hay que confundir el contenedor de C4 con un contenedor de Docker (una herramienta que ejecuta una aplicación aislada, con todo lo que necesita para funcionar): un contenedor de Docker es una forma de ejecutar un contenedor de C4 y, en el diagrama de despliegue, se dibuja como un nodo.
 
 **Cola y almacén de datos: qué los diferencia.** Los dos se dibujan como contenedores porque son programas que corren por separado y guardan información, pero cumplen funciones distintas:
 
@@ -359,7 +362,8 @@ Una cola dentro del propio proceso (por ejemplo, la estructura de cola del lengu
 5. **Recorrer una historia de usuario sobre la vista:** tomar una historia de usuario del TP1 (por ejemplo, la de un slice del flujo principal) y sus criterios de aceptación, y ubicar en un contenedor cada paso del *Given-When-Then*. Si un paso no tiene dónde ocurrir, falta un contenedor o una relación.
 6. **Elegir qué contenedores merecen una vista de componentes:** los que implementan los procesos elegidos y tienen lógica propia.
 7. **Armar la vista de componentes** a partir de las responsabilidades: agrupar por cohesión las responsabilidades que surgen de las historias de usuario y los requerimientos funcionales, aplicar los patrones elegidos y sumar los aspectos transversales.
-8. **Revisar** con las reglas de las secciones 4.4 a 4.7.
+8. **Armar el diagrama de despliegue:** para cada contenedor, preguntarse en qué nodo se ejecuta, cuántas instancias necesita y con qué capacidad. Empezar por el despliegue más simple (por ejemplo, un solo servidor) y separar nodos o sumar instancias solo cuando un escenario lo exija. Cada cambio significativo es una decisión de arquitectura.
+9. **Revisar** con las reglas de las secciones 4.4 a 4.8.
 
 ### 4.4 Vista de contenedores: reglas y restricciones
 
@@ -367,7 +371,7 @@ Una cola dentro del propio proceso (por ejemplo, la estructura de cola del lengu
 - Dentro del límite del sistema se dibujan solo contenedores. Las personas y los sistemas externos van fuera.
 - Cada contenedor indica **nombre, tecnología y responsabilidad** en una frase.
 - Los almacenes de datos y las colas se dibujan como contenedores.
-- Los elementos que existen por una táctica o un patrón (una cola, una réplica, una caché) se dibujan como contenedores y se rastrean a una decisión de arquitectura.
+- Los elementos que existen por una táctica o un patrón y se ejecutan por separado (por ejemplo, una cola de mensajes o una caché compartida) se dibujan como contenedores y se rastrean a una decisión de arquitectura.
 - **Un contenedor no contiene otros contenedores.** Si algo contiene otras piezas que se ejecutan por separado, se dibujan como contenedores distintos.
 - No se dibujan componentes ni clases dentro de un contenedor.
 - No hay elementos aislados: todo contenedor se relaciona con al menos otro elemento.
@@ -422,26 +426,49 @@ Ejemplos de relaciones entre componentes:
 | Hacia un contenedor vecino | Acceso a datos → Base de datos: "Lee y escribe" (SQL) |
 | Desde un contenedor vecino | Aplicación web → Controladores: "Solicita" (JSON/HTTPS) |
 
+**Comunicación entre nodos.** En el diagrama de despliegue las relaciones son las mismas de la vista de contenedores, pero ahora se ve por dónde viajan. Si dos contenedores están en nodos distintos, la comunicación pasa por la red entre servidores: suma demora, puede cortarse y conviene protegerla. Si están en el mismo nodo, la comunicación es local: es más rápida y no depende de la red, aunque sigue siendo comunicación entre procesos. Por eso, separar dos contenedores en nodos distintos es una decisión con costo y debe responder a un escenario. En el diagrama no se agregan relaciones nuevas: cada flecha corresponde a una de la vista de contenedores, con el mismo protocolo.
+
 ### 4.7 Cómo se nombran los elementos
 
 - **Contenedores:** sustantivo que describe el **rol**, en el lenguaje del dominio y sin tecnología en el nombre. Ejemplos: "Aplicación web", "API", "Base de datos de resultados", "Cola de análisis", "Motor de análisis". Evitar nombres genéricos como "Servidor" o "Módulo". La tecnología va en su propio campo.
 - **Componentes:** sustantivo que describe la **responsabilidad**. Ejemplos: "Servicio de carga", "Control de cuota", "Acceso a datos". Evitar nombres de clases ("CuotaManagerImpl") o nombres que solo indican la capa ("Controller2").
+- **Nodos:** sustantivo que describe el **rol** de la infraestructura ("Servidor de base de datos", "Computadora del investigador/a"), con el tipo o la tecnología en su propio campo (sistema operativo, entorno de ejecución, capacidad). Si hay varias instancias idénticas, se indica en el nombre: "Servidor de aplicación (x2)".
 - **Descripción:** una frase que dice **qué hace**, no cómo lo hace.
 - **Relaciones:** frase verbal corta, y el protocolo entre corchetes cuando corresponde.
 - **Coherencia:** el mismo elemento se llama igual en todas las vistas, en las decisiones y en la tabla de trazabilidad. Los términos del dominio deben coincidir con los del modelo de dominio del TP1.
 - Un único idioma en todo el diagrama.
 
-### 4.8 Consistencia y trazabilidad
+### 4.8 Vista de despliegue: reglas y restricciones
 
-- Todo driver de la sección 3.3 se ve en al menos un contenedor o componente.
+- Hay un solo diagrama, del **entorno de producción**: el entorno real en el que el sistema funcionaría para sus usuarios. No se dibujan otros entornos.
+- Un nodo no es necesariamente una máquina física: puede ser un servidor físico, una máquina virtual, un entorno de ejecución como Docker o un servicio de la nube. Varios contenedores pueden compartir el mismo nodo, y se separan en nodos distintos solo cuando un escenario lo exige (aislar recursos, limitar el acceso, replicar por hardware). Cada nodo de más es infraestructura que el grupo tendría que operar.
+- Todo contenedor de la vista de contenedores aparece al menos una vez, dentro de un nodo. El despliegue **no crea contenedores nuevos**.
+- Los nodos pueden contener otros nodos (por ejemplo, un servidor que contiene un entorno de ejecución que contiene un contenedor), pero conviene no pasar de dos niveles.
+- Cada nodo indica **nombre y tipo o tecnología** de la infraestructura (sistema operativo, entorno de ejecución como Docker, servicio de la nube) y, cuando es relevante para un escenario, su capacidad (por ejemplo, la memoria).
+- Si un mismo contenedor se ejecuta en varias instancias idénticas, se dibuja una sola vez y la cantidad se indica en el nombre del nodo, con la forma "(x2)". Si una copia cumple un rol distinto (por ejemplo, una base de datos de solo lectura), es un contenedor aparte y también figura en la vista de contenedores.
+- Las personas y los sistemas externos no se dibujan en esta vista: ya están en la de contenedores. Sí se dibuja el nodo donde corre el cliente del usuario, como el navegador.
+- Un elemento de infraestructura sin contenedores propios, como un balanceador de carga (un servidor que reparte las solicitudes entre varias instancias), no se puede dibujar como nodo vacío en Mermaid: se indica en la etiqueta de la relación o en el nombre del nodo al que reparte.
+- Cada relación corresponde a una de la vista de contenedores y lleva el mismo protocolo.
+- Todo escenario cuya táctica dependa de la infraestructura (redundancia, más recursos, separación de servidores, aislamiento) debe poder señalarse en el diagrama: por ejemplo, un nodo con instancias replicadas o dos contenedores en nodos distintos.
+- Si el grupo prevé desplegar todo en un único servidor, dibuja ese nodo con todos los contenedores. Es válido, pero debe contrastarlo con los escenarios: si alguno exige más, lo declara como sacrificio asumido o agrega nodos.
+- Cada decisión de despliegue relevante (separar nodos, replicar) se registra como decisión de arquitectura.
+
+### 4.9 Consistencia y trazabilidad
+
+- Todo driver de la sección 3.3 se ve en al menos un contenedor, componente o nodo de despliegue.
 - El estilo y los patrones declarados en las decisiones coinciden con lo que muestran las dos vistas.
 - Los contenedores que aparecen en una vista de componentes son los mismos de la vista de contenedores.
+- Todo contenedor aparece en el diagrama de despliegue, y los contenedores y relaciones de ese diagrama coinciden con los de la vista de contenedores.
 - Todo contenedor y componente se rastrea a una responsabilidad del TP1 o a una decisión de arquitectura.
 - **Historias de usuario sobre las vistas:** cada historia de usuario del TP1 que se implementa en los procesos elegidos se puede recorrer sobre los diagramas. Para cada una, el grupo indica por qué contenedores y componentes pasa, siguiendo los pasos de su criterio de aceptación (*Given-When-Then*). El Anexo C tiene un ejemplo.
 
-### 4.9 Herramienta y formato
+### 4.10 Herramienta y formato
 
-Todos los diagramas se escriben en Mermaid (`C4Context`, `C4Container`, `C4Component`), dentro de archivos `.md` del repositorio, nunca como imagen pegada. La sintaxis C4 de Mermaid es experimental y tiene limitaciones de disposición: el grupo prioriza la claridad del contenido por sobre el formato visual. En el Anexo C hay un ejemplo de cada vista.
+Todos los diagramas se escriben en Mermaid (`C4Context`, `C4Container`, `C4Component`, `C4Deployment`), dentro de archivos `.md` del repositorio, nunca como imagen pegada. La sintaxis C4 de Mermaid es experimental y tiene limitaciones de disposición: el grupo prioriza la claridad del contenido por sobre el formato visual.
+
+Tres particularidades de Mermaid para el diagrama de despliegue: cada nodo (`Deployment_Node`) debe contener al menos un elemento, no hay notación para varias instancias (por eso se usa "(x2)" en el nombre) y la disposición automática puede superponer las etiquetas de las flechas. Para mejorarla se pueden fijar las direcciones con `Rel_D`, `Rel_L` o `Rel_R`, desplazar una etiqueta con `UpdateRelStyle(origen, destino, $offsetX="-40", $offsetY="10")` y ajustar cuántos elementos van por fila con `UpdateLayoutConfig`.
+
+En el Anexo C hay un ejemplo de cada vista.
 
 ---
 
@@ -459,7 +486,7 @@ Si el documento se vuelve muy extenso, puede dividirse en varios archivos dentro
 
 El uso de inteligencia artificial está permitido y forma parte de la consigna. Puede asistir en la evaluación de trade-offs entre alternativas, en la redacción de borradores de decisiones y en la generación de diagramas Mermaid.
 
-La IA puede sugerir estructuras plausibles pero arquitectónicamente incorrectas para el contexto específico del proyecto. Por eso el grupo documenta cada interacción: qué solicitó, qué obtuvo, qué aceptó, modificó o descartó, y por qué. En particular, debe **verificar que las tácticas que propone la IA existan en la bibliografía de referencia y respondan realmente al escenario**, que la arquitectura propuesta cubra sus drivers, y que los diagramas generados sean consistentes con las decisiones y cumplan las reglas de las secciones 4.4 a 4.7. El registro se guarda en `docs/uso-ia.md`.
+La IA puede sugerir estructuras plausibles pero arquitectónicamente incorrectas para el contexto específico del proyecto. Por eso el grupo documenta cada interacción: qué solicitó, qué obtuvo, qué aceptó, modificó o descartó, y por qué. En particular, debe **verificar que las tácticas que propone la IA existan en la bibliografía de referencia y respondan realmente al escenario**, que la arquitectura propuesta cubra sus drivers, y que los diagramas generados sean consistentes con las decisiones y cumplan las reglas de las secciones 4.4 a 4.8. El registro se guarda en `docs/uso-ia.md`.
 
 ---
 
@@ -476,6 +503,7 @@ La IA puede sugerir estructuras plausibles pero arquitectónicamente incorrectas
 - [ ] Decisiones de arquitectura (`DA-xx`), con al menos una por driver, con alternativas y consecuencias.
 - [ ] Vista de contenedores C4, global, con su catálogo, que cumple las reglas de las secc. 4.4, 4.6 y 4.7 y muestra el estilo elegido.
 - [ ] Vista de componentes C4 de cada contenedor que implementa los procesos elegidos, con su catálogo, que cumple las reglas de las secc. 4.5, 4.6 y 4.7 y muestra los patrones y aspectos transversales.
+- [ ] Diagrama de despliegue C4 del entorno de producción, con su catálogo de nodos, que cumple las reglas de las secc. 4.6, 4.7 y 4.8 y muestra dónde se ejecuta cada contenedor.
 - [ ] Recorrido de las historias de usuario sobre las vistas.
 - [ ] Tabla de trazabilidad escenario → táctica → estilo o patrón → decisión → elemento C4.
 - [ ] Registro del uso de IA, según la sección 6.
@@ -491,6 +519,7 @@ En la defensa se podrá solicitar al grupo que:
 - Si la arquitectura es híbrida, explique por qué cada estilo responde a un escenario y cómo se conectan las partes.
 - Recorra una historia de usuario y su criterio de aceptación sobre sus diagramas.
 - Explique cómo se comunican dos contenedores y dos componentes de su arquitectura, y por qué de esa forma.
+- Muestre en el diagrama de despliegue dónde se ve una táctica de su arquitectura y qué pasaría con el sistema si fallara uno de los nodos.
 - Trace un escenario del TP2 hasta el elemento del modelo C4 que lo atiende.
 - Muestre un caso en que rechazó una sugerencia de la IA, y argumente por qué.
 
@@ -501,7 +530,7 @@ En la defensa se podrá solicitar al grupo que:
 - [ ] Repositorio actualizado con commits que reflejen el avance de este TP.
 - [ ] Documento de arquitectura ubicado en `docs/architecture/`.
 - [ ] Diagramas en Mermaid dentro de archivos Markdown.
-- [ ] Sin vistas de clases, de código ni de despliegue (TP4).
+- [ ] Sin vistas de clases ni de código (TP4).
 - [ ] Siglas aclaradas la primera vez que se usan.
 - [ ] Grupo en condiciones de defender oralmente cada decisión tomada.
 
@@ -518,10 +547,11 @@ En la defensa se podrá solicitar al grupo que:
 | 5. Estrategia de solución | Tácticas elegidas por driver, estilo base y estilos por zona, patrones por contenedor, aspectos transversales, tabla de cobertura y sacrificios | Pasos 2 a 5 |
 | 6. Vista de contenedores | Diagrama, catálogo de contenedores y catálogo de relaciones | Parte B |
 | 7. Vista de componentes | Un diagrama y un catálogo por cada contenedor que implementa los procesos elegidos | Parte B |
-| 8. Historias de usuario sobre las vistas | Recorrido de cada historia de usuario por contenedores y componentes (ejemplo en el Anexo C) | TP1 (historias y criterios de aceptación) |
-| 9. Decisiones de arquitectura | Una entrada `DA-xx` por decisión significativa (plantilla en el Anexo B) | Paso 5 |
-| 10. Trazabilidad | Escenario → táctica → estilo o patrón → decisión → elemento C4; historia de usuario → elementos | Secc. 3.7 y 4.8 |
-| 11. Glosario y bibliografía | Siglas y términos, y referencias | Anexo D y Bibliografía |
+| 8. Vista de despliegue | Diagrama del entorno de producción y catálogo de nodos | Parte B |
+| 9. Historias de usuario sobre las vistas | Recorrido de cada historia de usuario por contenedores y componentes (ejemplo en el Anexo C) | TP1 (historias y criterios de aceptación) |
+| 10. Decisiones de arquitectura | Una entrada `DA-xx` por decisión significativa (plantilla en el Anexo B) | Paso 5 |
+| 11. Trazabilidad | Escenario → táctica → estilo o patrón → decisión → elemento C4 (contenedor, componente o nodo); historia de usuario → elementos | Secc. 3.7 y 4.9 |
+| 12. Glosario y bibliografía | Siglas y términos, y referencias | Anexo D y Bibliografía |
 
 ---
 
@@ -590,6 +620,7 @@ El sistema ficticio EcoDatos (ver el ejemplo resuelto del TP1) parte de la arqui
 | v2 | `EC-03` cuota concurrente | Estilo repositorio: base central compartida; transacción en el acceso a datos | La base la usan la API y el motor. Componente de acceso a datos con transacciones y componente de control de cuota |
 | v3 | `EC-01` falla de cómputo | Aspecto transversal de gestión de excepciones | Componente o regla común en la API y el motor |
 | v4 | Seguridad y trazabilidad | Aspectos transversales de autenticación y auditoría | Componentes propios en la API |
+| v5 | Infraestructura (`EC-01`, `EC-02`, `EC-03`) | Dos nodos de servidor: uno de aplicación con Docker (API, cola y motor) y uno de base de datos | Diagrama de despliegue de producción (más abajo) |
 
 **Vista de contenedores (versión final):**
 
@@ -684,6 +715,46 @@ C4Component
 
 El catálogo de relaciones de esta vista se arma igual que el de contenedores. Entre componentes del mismo contenedor el tipo es "llamada interna" y no lleva protocolo.
 
+**Vista de despliegue del entorno de producción:**
+
+```mermaid
+C4Deployment
+    title Despliegue de EcoDatos - Producción
+    Deployment_Node(pc, "Computadora del investigador/a", "Navegador web") {
+        Container(app, "Aplicación web", "React", "Interfaz de carga y consulta")
+    }
+    Deployment_Node(srvApp, "Servidor de aplicación", "Ubuntu") {
+        Deployment_Node(dk, "Docker", "Docker Engine") {
+            Container(api, "API", "Python / FastAPI", "Valida datos, controla cuota, encola análisis")
+            ContainerQueue(cola, "Cola de mensajes", "RabbitMQ", "Solicitudes pendientes")
+            Container(motor, "Motor de análisis", "Python", "Ejecuta análisis y guarda resultados")
+        }
+    }
+    Deployment_Node(srvBd, "Servidor de base de datos", "Ubuntu + PostgreSQL 16") {
+        ContainerDb(bd, "Base de datos", "PostgreSQL", "Datasets, resultados y cuotas")
+    }
+    Rel(app, api, "Llama a", "JSON/HTTPS")
+    Rel(api, cola, "Publica solicitudes", "AMQP")
+    Rel(motor, cola, "Consume solicitudes", "AMQP")
+    Rel(api, bd, "Lee y escribe", "SQL")
+    Rel(motor, bd, "Lee datasets y guarda resultados", "SQL")
+    UpdateRelStyle(api, cola, $offsetX="-40", $offsetY="-10")
+    UpdateRelStyle(motor, cola, $offsetX="-60", $offsetY="10")
+    UpdateRelStyle(api, bd, $offsetX="20", $offsetY="10")
+    UpdateRelStyle(motor, bd, $offsetX="30", $offsetY="-10")
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+```
+
+**Catálogo de nodos:**
+
+| Nodo | Tipo o tecnología | Contenedores que ejecuta | Instancias | Escenario o decisión que lo justifica |
+|---|---|---|---|---|
+| Computadora del investigador/a | Navegador web | Aplicación web | Una por usuario | Es el cliente: no depende de una decisión de infraestructura |
+| Servidor de aplicación | Ubuntu, con Docker | API, Cola de mensajes, Motor de análisis | 1 | `EC-02`: la cola desacopla la API del análisis. `EC-01`: cada contenedor corre como un proceso aislado, así que una falla del motor no detiene la API |
+| Servidor de base de datos | Ubuntu + PostgreSQL 16 | Base de datos | 1 | `EC-03`: una única base permite descontar la cuota dentro de una transacción. Se separa para limitar su acceso al servidor de aplicación y respaldarla por separado |
+
+Sacrificios asumidos: con un solo servidor de aplicación, si el servidor cae se detienen la API, la cola y el motor. Además el motor comparte procesador y memoria con la API, por lo que un análisis muy pesado podría demorar las respuestas. Si eso ocurriera, el paso siguiente sería pasar el motor a un nodo propio. La base de datos también es un punto único de falla. El grupo acepta estos riesgos para no multiplicar la infraestructura que debe operar y lo registra como decisión de arquitectura.
+
 **Historias de usuario sobre las vistas:**
 
 | Historia de usuario | Paso del criterio de aceptación | Contenedores | Componentes |
@@ -708,6 +779,7 @@ El catálogo de relaciones de esta vista se arma igual que el de contenedores. E
 | DA | Decisión de arquitectura |
 | DFD | Diagrama de flujo de datos |
 | EC | Escenario de calidad |
+| GB | Gigabyte: unidad de capacidad de memoria o de almacenamiento |
 | HTTP | Protocolo de la web |
 | HTTPS | HTTP sobre una conexión cifrada |
 | HU | Historia de usuario |
@@ -716,6 +788,7 @@ El catálogo de relaciones de esta vista se arma igual que el de contenedores. E
 | JSON | Formato de texto para intercambiar datos estructurados |
 | MVC | Modelo-Vista-Controlador |
 | MVVM | Modelo-Vista-Modelo de Vista |
+| RAM | Memoria de trabajo de una computadora |
 | REST | Estilo de diseño de APIs sobre HTTP, donde cada recurso tiene una dirección y se usan operaciones estándar |
 | SMTP | Protocolo para enviar correo electrónico |
 | SOA | Arquitectura orientada a servicios |
