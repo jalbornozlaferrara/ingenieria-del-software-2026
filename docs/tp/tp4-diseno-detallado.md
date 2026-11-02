@@ -16,7 +16,7 @@ Al finalizar este trabajo práctico, el grupo deberá ser capaz de:
 - Pasar de la arquitectura (TP3) al diseño detallado, tomando una historia de usuario (HU) como unidad de trabajo.
 - Analizar la HU elegida en sus tres dimensiones: **funcionalidad** (qué hace), **estructura** (qué elementos la componen) y **calidad** (qué propiedades debe cumplir).
 - Construir, para esa HU, un diagrama de **robustez**, diagramas de **secuencia** (uno por camino) y un **modelo de clases**, de modo que cada uno se derive del anterior.
-- Aplicar los criterios GRASP (asignación de responsabilidades) y los principios SOLID para justificar qué clase hace cada cosa y cómo se relacionan las clases.
+- Aplicar los criterios GRASP (asignación de responsabilidades) para justificar qué clase hace cada cosa y cómo se relacionan las clases.
 - Implementar las clases e interfaces diseñadas en el lenguaje elegido por el grupo, con una interfaz gráfica mínima que permita mostrar el flujo de la HU funcionando.
 - Diseñar casos de prueba de caja negra y de caja blanca a partir de los criterios de aceptación y del código, y automatizarlos con un framework de pruebas (por ejemplo, pytest).
 - Medir la cobertura de las pruebas e interpretar el reporte.
@@ -194,23 +194,15 @@ El diagrama de clases se **deriva** del de secuencia: cada participante pasa a s
 Reglas:
 
 - Cada clase incluye los atributos y las operaciones que el diagrama de secuencia usa, con sus tipos. No se agregan operaciones "por si acaso".
-- Los repositorios y las conexiones hacia sistemas externos se modelan como **interfaces**; la clase concreta (en memoria, simulada) aparece aparte y las implementa. Esto permite reemplazar la persistencia real sin tocar el controlador (ver DIP en la sección 3.7).
+- Los repositorios y las conexiones hacia sistemas externos se modelan como **interfaces**; la clase concreta (en memoria, simulada) aparece aparte y las implementa. Esto permite reemplazar la persistencia real sin tocar el controlador.
 - Las relaciones indican su tipo: asociación, dependencia (`..>`), realización de interfaz (`..|>`), herencia y composición. Se indica la multiplicidad cuando importa.
 - El diagrama de clases es **uno solo** y reúne lo que aparece en todas las secuencias de la HU (éxito y rechazos).
 
 ### 3.7 Justificación del diseño
 
-Terminado el modelo de clases, el grupo revisa su diseño contra los principios SOLID. Para cada principio, escribe en el documento una o dos líneas que indiquen **dónde se cumple en su diseño** o **dónde se decidió no cumplirlo y por qué**.
+Terminado el modelo de clases, el grupo justifica su diseño en el documento: para las clases principales, indica qué responsabilidad tiene cada una y con qué criterio GRASP se la asignó (la tabla de asignación de la sección 3.5 sirve de base), y explica las decisiones de diseño que tomó (por ejemplo, por qué hay una interfaz en ese lugar o por qué una regla vive en una entidad y no en el controlador).
 
-| Principio | Pregunta de revisión |
-|---|---|
-| SRP — Responsabilidad única | ¿Cada clase tiene una sola razón para cambiar? ¿El controlador hace algo que debería hacer una entidad? |
-| OCP — Abierto/cerrado | Si aparece una variante (otro tipo de análisis, otra forma de calcular), ¿se agrega una clase nueva o hay que modificar código existente con `if` encadenados? |
-| LSP — Sustitución de Liskov | ¿Se puede usar cualquier implementación de una interfaz (la de memoria o la real) sin que el controlador note la diferencia? |
-| ISP — Segregación de interfaces | ¿Las interfaces son chicas y específicas, o obligan a implementar métodos que no se usan? |
-| DIP — Inversión de dependencias | ¿El controlador depende de interfaces y recibe sus colaboradores desde afuera, o crea él mismo las clases concretas? |
-
-La respuesta honesta a una de estas preguntas puede ser "no lo cumple, y está bien así". Aplicar SOLID tiene un costo (más clases, más indirección), y el grupo debe poder explicar cuándo ese costo vale la pena y cuándo no. Una clase de tres líneas con una sola implementación posible no necesita una interfaz solo porque "SOLID lo pide".
+La justificación tiene que ser honesta: más clases e interfaces tienen un costo (más indirección), y el grupo debe poder explicar cuándo ese costo vale la pena y cuándo no. Una clase de tres líneas con una sola implementación posible no necesita una interfaz solo porque el diagrama quede más prolijo.
 
 **Patrones de diseño (opcional).** Si el diseño usa un patrón de los vistos en clase (por ejemplo, Strategy para variantes de cálculo, Factory para crear según un tipo, Repository para el acceso a datos), el grupo lo nombra, indica el problema que resuelve y señala dónde está en el diagrama de clases. No se pide usar patrones por obligación: un patrón que no resuelve un problema concreto del diseño empeora la nota, no la mejora.
 
@@ -418,7 +410,7 @@ La IA suele proponer diseños con más clases, más interfaces y más patrones d
 - [ ] Diagrama de robustez de la HU, que cumple las reglas de la sección 3.4.
 - [ ] Un diagrama de secuencia por camino (éxito y rechazos), con las responsabilidades justificadas con GRASP.
 - [ ] Un diagrama de clases derivado de los diagramas de secuencia.
-- [ ] Revisión del diseño contra SOLID, con el análisis de dónde se cumple y dónde no.
+- [ ] Justificación del diseño (criterios GRASP y, si los hay, patrones de diseño usados).
 - [ ] Verificación de coherencia con la arquitectura (sección 3.8) y, si corresponde, actualización del TP3.
 - [ ] Tabla de trazabilidad HU → componente C4 → clases → archivo → pruebas.
 - [ ] Código en `src/`, coherente con el diagrama de clases, con persistencia en memoria y servicios simulados detrás de interfaces.
@@ -438,7 +430,6 @@ La defensa incluye una **demostración del sistema funcionando**, a partir del r
 - Ejecute la interfaz y recorra el criterio de aceptación de una HU, incluido un camino de rechazo.
 - Muestre ese mismo recorrido en el diagrama de robustez, en el de secuencia y en el código del controlador.
 - Explique por qué una responsabilidad está en una clase y no en otra, con el criterio GRASP que lo justifica.
-- Muestre dónde se cumple (o no) alguno de los principios SOLID en su diseño.
 - Cambie una implementación (por ejemplo, el repositorio en memoria por otro) y explique por qué el controlador no se modifica.
 - Muestre cómo su diseño respeta el estilo y los patrones del TP3, y qué cambió de la arquitectura al bajar al diseño detallado.
 - Muestre la prueba que verifica un criterio de aceptación y la que verifica una propiedad de calidad del TP2 o del TP3.
@@ -674,17 +665,7 @@ classDiagram
     RepositorioPrestamosEnMemoria ..|> RepositorioPrestamos
 ```
 
-### A.6 Justificación contra SOLID
-
-| Principio | En este diseño |
-|---|---|
-| SRP | El controlador solo coordina; el socio decide si puede retirar, el ejemplar controla su disponibilidad y el préstamo calcula su vencimiento |
-| OCP | Las reglas del socio son hoy tres condiciones dentro de `motivo_de_rechazo`. Si aparecieran más (socios con otro límite, reservas previas), convendría una regla por clase (patrón Strategy). Por ahora no se justifica |
-| LSP | Cualquier repositorio de ejemplares puede reemplazar al de memoria **si cumple el mismo contrato**: devolver siempre el mismo ejemplar, o garantizar la atomicidad en la base. Un repositorio que devolviera una copia nueva en cada consulta rompería `EC-02` aunque compile |
-| ISP | Tres interfaces de una operación cada una: ninguna obliga a implementar lo que no usa |
-| DIP | El controlador recibe sus tres repositorios y el reloj por el constructor, y depende solo de interfaces |
-
-### A.7 Código (fragmento)
+### A.6 Código (fragmento)
 
 El ejemplo está en Python, pero nada del diseño depende del lenguaje: las clases, las interfaces y las pruebas se escriben igual en Java, JavaScript, C# u otro.
 
@@ -727,7 +708,7 @@ class Ejemplar:
             return True
 ```
 
-### A.8 Trazabilidad y pruebas
+### A.7 Trazabilidad y pruebas
 
 | Criterio / escenario | Caso de prueba | Prueba |
 |---|---|---|
@@ -748,7 +729,7 @@ class Ejemplar:
 | 2. Relación con la arquitectura | Tabla de coherencia: `EC-xx`, táctica y `DA-xx`; componentes y capas que atraviesa; estilo y patrones; verificación de coherencia (sección 3.8) |
 | 3. Diseño de la HU | Enunciado y criterios, análisis tridimensional, diagrama de robustez, diagramas de secuencia (uno por camino) con la asignación de responsabilidades |
 | 4. Modelo de clases | Un diagrama derivado de todas las secuencias |
-| 5. Justificación del diseño | Revisión contra SOLID y patrones de diseño usados, si los hay |
+| 5. Justificación del diseño | Asignación de responsabilidades (GRASP), decisiones de diseño y patrones de diseño usados, si los hay |
 | 6. Implementación | Estructura del código, cómo se ejecuta y cómo se reemplazan la persistencia y los servicios externos |
 | 7. Pruebas | Tabla de casos de prueba, resultados y análisis de cobertura |
 | 8. Trazabilidad | HU → componente C4 → clases → archivo → pruebas |
@@ -764,18 +745,12 @@ class Ejemplar:
 | C4 | Modelo de documentación de arquitectura en cuatro niveles: contexto, contenedores, componentes y código |
 | CP | Caso de prueba |
 | DA | Decisión de arquitectura |
-| DIP | Principio de inversión de dependencias (*dependency inversion principle*) |
 | EC | Escenario de calidad |
 | GoF | *Gang of Four*: los cuatro autores del libro clásico de patrones de diseño |
 | GRASP | Patrones generales para asignar responsabilidades (*general responsibility assignment software patterns*) |
 | GWT | Given-When-Then: formato de los criterios de aceptación |
 | HU | Historia de usuario |
 | IA | Inteligencia artificial |
-| ISP | Principio de segregación de interfaces (*interface segregation principle*) |
-| LSP | Principio de sustitución de Liskov (*Liskov substitution principle*) |
-| OCP | Principio abierto/cerrado (*open/closed principle*) |
-| SOLID | Conjunto de cinco principios de diseño orientado a objetos: SRP, OCP, LSP, ISP y DIP |
-| SRP | Principio de responsabilidad única (*single responsibility principle*) |
 | TDD | Desarrollo guiado por pruebas (*test-driven development*) |
 | TP | Trabajo práctico |
 | UML | Lenguaje unificado de modelado |
@@ -785,7 +760,6 @@ class Ejemplar:
 ## Bibliografía
 
 - Material teórico de la materia sobre diseño tridimensional de software: análisis de funcionalidad, estructura y calidad; diagramas de robustez, de secuencia y de clases.
-- Valotto, V. *SOLID: la arquitectura que emerge del dolor*. Evolución arquitectónica de un sistema real en Python.
 - Larman, C. *Applying UML and Patterns: An Introduction to Object-Oriented Analysis and Design and Iterative Development*. Prentice Hall. Referencia para los criterios GRASP.
 - Gamma, E., Helm, R., Johnson, R. y Vlissides, J. *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
 - Documentación del framework de pruebas y de la herramienta de cobertura del lenguaje elegido (por ejemplo, pytest y pytest-cov).
