@@ -116,6 +116,7 @@ El grupo elige la HU y copia en el documento su enunciado y sus criterios de ace
 - Qué escenario de calidad (`EC-xx`) la condiciona, qué táctica lo resuelve y qué decisión de arquitectura (`DA-xx`) la respalda.
 - Qué estilo y patrones del TP3 rigen en el contenedor donde se ejecuta.
 - Qué componentes de la vista de componentes del TP3 atraviesa, en qué capa está cada uno y cuál de ellos es el principal (por ejemplo, "Servicio de análisis" del contenedor API).
+- Qué **entidades del modelo de dominio** del TP1 intervienen en la HU (ver más abajo).
 - Por qué la eligió, según la sección 2.1.
 
 Estos datos se reúnen en una **tabla de coherencia**, que es el primer producto de la HU y la base de los pasos siguientes:
@@ -125,7 +126,25 @@ Estos datos se reúnen en una **tabla de coherencia**, que es el primer producto
 | Funcionalidad | HU, caso de uso o slice, y caminos de los criterios | `HU-03` Prestar un ejemplar; camino principal y rechazos (socio no habilitado, ejemplar no disponible) |
 | Estructura | Componentes que atraviesa, capas, estilo y patrones | «Controladores», «Servicio de préstamos» y «Acceso a datos» del contenedor API; patrón de capas |
 | Calidad | `EC-xx`, táctica y `DA-xx` | `EC-02` préstamos simultáneos del mismo ejemplar; operación atómica y transacción en el acceso a datos (`DA-02`) |
+| Dominio | Entidades del modelo del TP1 que intervienen y qué usa la HU de cada una | `Socio`, `Ejemplar` y `Prestamo`; no intervienen `Libro`, `Autor` ni `Multa` |
 | Verificación | Cómo se comprueba la medida del escenario | Prueba con pedidos simultáneos del mismo ejemplar |
+
+**Entidades del modelo de dominio que intervienen en la HU.** Este punto es central: el diseño detallado parte de los conceptos del negocio que el grupo ya identificó en el TP1. Para la HU elegida, el grupo identifica qué entidades del diagrama de dominio **"pegan" con ella**, es decir, cuáles aparecen en sus criterios de aceptación o hacen falta para cumplirlos. Se sugiere este procedimiento:
+
+1. Marcar los sustantivos del enunciado y de los criterios Given-When-Then.
+2. Buscar cada uno en el diagrama de dominio del TP1 e identificar qué entidad le corresponde.
+3. Para cada entidad que interviene, anotar qué usa la HU de ella (atributos, reglas, relaciones con otras entidades que intervienen) y si la HU la crea, la consulta o la modifica.
+4. Revisar las entidades del modelo que no intervienen y explicar por qué: porque la HU no las usa, o porque alcanza con un dato que expone otra entidad.
+5. Si la HU necesita un concepto, un atributo o una relación que el modelo no tiene, se agrega al modelo de dominio del TP1 y se documenta el cambio.
+
+El resultado es una tabla, con una fila por cada entidad del modelo que se haya considerado:
+
+| Entidad del modelo (TP1) | ¿Interviene? | Qué usa la HU de ella | La HU la... |
+|---|---|---|---|
+| `Socio` | Sí | Si está activo, sus multas pendientes y sus préstamos vigentes | Consulta y modifica |
+| `Libro` | No | No interviene en la lógica del préstamo | — |
+
+Las entidades de esta tabla son las que se llevan al diagrama de robustez (sección 3.4). El Anexo A muestra la tabla completa de un ejemplo.
 
 ### 3.3 Paso 2 — Análisis tridimensional
 
@@ -148,6 +167,8 @@ El diagrama de robustez es un puente entre lo que pide la HU y el diseño de cla
 | **Boundary** (frontera) | Lo que conecta el sistema con un actor o con otro sistema: pantallas, interfaces hacia servicios externos | Pantalla de préstamo; conexión con un servicio de avisos por correo |
 | **Controller** (controlador) | Coordina la ejecución de la funcionalidad: decide qué se hace y en qué orden | Controlador de préstamos; repositorios |
 | **Entity** (entidad) | Un concepto del dominio, con sus datos y reglas | Socio; ejemplar; préstamo |
+
+**De dónde salen las entidades.** Las entidades del diagrama de robustez no se inventan: son las que el grupo identificó en el paso 1 como entidades del modelo de dominio que intervienen en la HU. Si al dibujar el diagrama aparece una entidad que no está en esa tabla, hay dos salidas: se corrige el diagrama o se agrega la entidad al modelo de dominio y se documenta.
 
 **Reglas de conexión:**
 
@@ -196,6 +217,7 @@ Reglas:
 - Cada clase incluye los atributos y las operaciones que el diagrama de secuencia usa, con sus tipos. No se agregan operaciones "por si acaso".
 - Los repositorios y las conexiones hacia sistemas externos se modelan como **interfaces**; la clase concreta (en memoria, simulada) aparece aparte y las implementa. Esto permite reemplazar la persistencia real sin tocar el controlador.
 - Las relaciones indican su tipo: asociación, dependencia (`..>`), realización de interfaz (`..|>`), herencia y composición. Se indica la multiplicidad cuando importa.
+- Las clases de dominio conservan los nombres y las relaciones del modelo de dominio del TP1. Si el diseño necesita cambiar algo (un nombre, una relación o una clase nueva), el cambio se documenta y el modelo del TP1 se actualiza.
 - El diagrama de clases es **uno solo** y reúne lo que aparece en todas las secuencias de la HU (éxito y rechazos).
 
 ### 3.7 Justificación del diseño
@@ -216,9 +238,11 @@ La justificación tiene que ser honesta: más clases e interfaces tienen un cost
 | Cada mensaje entre componentes está en el catálogo de relaciones del TP3 | | Secuencia y catálogo |
 | El diseño respeta las restricciones del estilo y de los patrones del contenedor | | Tabla de restricciones del TP3 |
 | La táctica del escenario de calidad aparece como operación o mensaje | | Secuencia |
+| Cada entidad del diagrama de robustez está en el modelo de dominio del TP1 (o se agregó a él) | | Tabla de entidades del paso 1 |
+| Cada entidad que interviene según el paso 1 aparece en el diseño, o se explica por qué no | | Diagramas de robustez y de clases |
 | La medida del escenario tiene una prueba que la verifica | | Caso de prueba |
 
-Las diferencias que aparezcan entre el diseño y el TP3 no son un error del grupo: la arquitectura evoluciona al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el TP3 se actualice.
+Las diferencias que aparezcan entre el diseño y el TP3, o entre el diseño y el modelo de dominio del TP1, no son un error del grupo: el diseño se precisa al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el documento anterior se actualice.
 
 **Trazabilidad.** El grupo agrega a la tabla de trazabilidad del TP3 las columnas de diseño, de modo que la HU se pueda seguir hasta el código y la prueba que la verifica:
 
@@ -406,6 +430,7 @@ La IA suele proponer diseños con más clases, más interfaces y más patrones d
 
 - [ ] HU seleccionada, con su enunciado, criterios de aceptación y justificación de la elección.
 - [ ] Tabla de coherencia (funcionalidad, estructura, calidad y verificación): `EC-xx`, táctica, `DA-xx`, componentes y capas que atraviesa, estilo y patrones.
+- [ ] Entidades del modelo de dominio del TP1 que intervienen en la HU, con lo que usa la HU de cada una y, si hizo falta, el cambio al modelo.
 - [ ] Análisis tridimensional de la HU.
 - [ ] Diagrama de robustez de la HU, que cumple las reglas de la sección 3.4.
 - [ ] Un diagrama de secuencia por camino (éxito y rechazos), con las responsabilidades justificadas con GRASP.
@@ -431,6 +456,7 @@ La defensa incluye una **demostración del sistema funcionando**, a partir del r
 - Muestre ese mismo recorrido en el diagrama de robustez, en el de secuencia y en el código del controlador.
 - Explique por qué una responsabilidad está en una clase y no en otra, con el criterio GRASP que lo justifica.
 - Cambie una implementación (por ejemplo, el repositorio en memoria por otro) y explique por qué el controlador no se modifica.
+- Muestre en el modelo de dominio qué entidades intervienen en su HU y explique por qué las demás no.
 - Muestre cómo su diseño respeta el estilo y los patrones del TP3, y qué cambió de la arquitectura al bajar al diseño detallado.
 - Muestre la prueba que verifica un criterio de aceptación y la que verifica una propiedad de calidad del TP2 o del TP3.
 - Explique qué líneas no quedaron cubiertas en el reporte de cobertura y por qué.
@@ -471,7 +497,39 @@ Criterios de aceptación:
 | Funcionalidad | `HU-03` Prestar un ejemplar; camino principal y dos rechazos (socio no habilitado, ejemplar no disponible) |
 | Estructura | Contenedor API, componentes «Controladores», «Servicio de préstamos» y «Acceso a datos»; patrón de capas |
 | Calidad | `EC-02` integridad: dos préstamos simultáneos del mismo ejemplar. Medida: 0 ejemplares con dos préstamos vigentes en 100 intentos simultáneos. Táctica: operación atómica y transacción en el acceso a datos (`DA-02`) |
+| Dominio | Entidades del modelo del TP1 que intervienen: `Socio`, `Ejemplar` y `Prestamo` (ver abajo) |
 | Verificación | Prueba con 20 pedidos simultáneos del mismo ejemplar: solo uno se concreta |
+
+**Entidades del modelo de dominio que intervienen.** Este es el modelo de dominio supuesto del TP1; en verde, las entidades que "pegan" con la HU:
+
+```mermaid
+classDiagram
+    class Socio
+    class Multa
+    class Libro
+    class Autor
+    class Ejemplar
+    class Prestamo
+    Socio "1" --> "0..*" Prestamo : realiza
+    Socio "1" --> "0..*" Multa : tiene
+    Libro "1" --> "1..*" Ejemplar : tiene copias
+    Libro "*" --> "1..*" Autor : escrito por
+    Ejemplar "1" --> "0..*" Prestamo : se presta en
+    style Socio fill:#dcfce7,stroke:#15803d
+    style Ejemplar fill:#dcfce7,stroke:#15803d
+    style Prestamo fill:#dcfce7,stroke:#15803d
+```
+
+| Entidad del modelo (TP1) | ¿Interviene? | Qué usa la HU de ella | La HU la... |
+|---|---|---|---|
+| `Socio` | Sí | Si está activo, sus multas pendientes y sus préstamos vigentes (con eso decide si puede retirar) | Consulta y modifica (suma un préstamo) |
+| `Ejemplar` | Sí | Si está disponible | Consulta y modifica (lo marca como prestado) |
+| `Prestamo` | Sí | Fecha de préstamo y de devolución | Crea |
+| `Multa` | No | La HU solo necesita saber si hay multas pendientes, dato que expone `Socio` | — |
+| `Libro` | No | El préstamo es de un ejemplar concreto; el título no interviene en la lógica | — |
+| `Autor` | No | No se usa | — |
+
+En este ejemplo el modelo de dominio no necesitó cambios. Si la HU hubiera pedido, por ejemplo, conservar el historial de renovaciones de un préstamo, se agregaría esa entidad al modelo del TP1 y se anotaría el cambio.
 
 ### A.2 Paso 2 — Análisis tridimensional
 
@@ -521,7 +579,7 @@ flowchart LR
     class so,ej,pr entity
 ```
 
-Se verifican las reglas de la sección 3.4: el actor solo toca la pantalla, la pantalla solo toca al controlador, y ninguna entidad se accede desde una frontera. Cada elemento pertenece a un componente del TP3: la pantalla a la aplicación web, el controlador y las entidades a «Servicio de préstamos» y los repositorios a «Acceso a datos».
+Las tres entidades salen de la tabla del paso 1. Se verifican las reglas de la sección 3.4: el actor solo toca la pantalla, la pantalla solo toca al controlador, y ninguna entidad se accede desde una frontera. Cada elemento pertenece a un componente del TP3: la pantalla a la aplicación web, el controlador y las entidades a «Servicio de préstamos» y los repositorios a «Acceso a datos».
 
 ### A.4 Paso 4 — Diagramas de secuencia
 
@@ -727,7 +785,7 @@ class Ejemplar:
 |---|---|
 | 1. Introducción | Propósito, HU elegida, motivo de la elección y siglas usadas |
 | 2. Relación con la arquitectura | Tabla de coherencia: `EC-xx`, táctica y `DA-xx`; componentes y capas que atraviesa; estilo y patrones; verificación de coherencia (sección 3.8) |
-| 3. Diseño de la HU | Enunciado y criterios, análisis tridimensional, diagrama de robustez, diagramas de secuencia (uno por camino) con la asignación de responsabilidades |
+| 3. Diseño de la HU | Enunciado y criterios, entidades del modelo de dominio que intervienen, análisis tridimensional, diagrama de robustez, diagramas de secuencia (uno por camino) con la asignación de responsabilidades |
 | 4. Modelo de clases | Un diagrama derivado de todas las secuencias |
 | 5. Justificación del diseño | Asignación de responsabilidades (GRASP), decisiones de diseño y patrones de diseño usados, si los hay |
 | 6. Implementación | Estructura del código, cómo se ejecuta y cómo se reemplazan la persistencia y los servicios externos |
