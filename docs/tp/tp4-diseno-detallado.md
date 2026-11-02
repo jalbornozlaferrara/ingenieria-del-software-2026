@@ -129,7 +129,7 @@ Estos datos se reúnen en una **tabla de coherencia**, que es el primer producto
 | Dominio | Entidades del modelo del TP1 que intervienen y qué usa la HU de cada una | `Socio`, `Ejemplar` y `Prestamo`; no intervienen `Libro`, `Autor` ni `Multa` |
 | Verificación | Cómo se comprueba la medida del escenario | Prueba con pedidos simultáneos del mismo ejemplar |
 
-**Entidades del modelo de dominio que intervienen en la HU.** Este punto es central: el diseño detallado parte de los conceptos del negocio que el grupo ya identificó en el TP1. Para la HU elegida, el grupo identifica qué entidades del diagrama de dominio **"pegan" con ella**, es decir, cuáles aparecen en sus criterios de aceptación o hacen falta para cumplirlos. Se sugiere este procedimiento:
+**Entidades del modelo de dominio que intervienen en la HU.** Este punto es central: el diseño detallado no reemplaza el modelado de dominio, sino que parte de los datos, las reglas y los conceptos del negocio que el grupo ya identificó en el TP1 y decide quién hace qué con ellos. Para la HU elegida, el grupo identifica qué entidades del diagrama de dominio **"pegan" con ella**, es decir, cuáles aparecen en sus criterios de aceptación o hacen falta para cumplirlos. Se sugiere este procedimiento:
 
 1. Marcar los sustantivos del enunciado y de los criterios Given-When-Then.
 2. Buscar cada uno en el diagrama de dominio del TP1 e identificar qué entidad le corresponde.
@@ -177,14 +177,45 @@ El diagrama de robustez es un puente entre lo que pide la HU y el diseño de cla
 | Actor | Boundary | Sí | El actor solo interactúa a través de interfaces |
 | Boundary | Controller | Sí | La frontera delega la lógica en el controlador |
 | Controller | Entity | Sí | El controlador manipula los datos del dominio |
+| Controller | Controller | Sí | Los controladores se coordinan entre sí |
 | Boundary | Entity | **No** | Rompe la separación de capas |
-| Actor | Entity | **No** | El actor no accede directamente a los datos del dominio |
+| Actor | Entity o Controller | **No** | El actor no accede directamente a los datos ni a la lógica |
 
 Cuando aparece una conexión no permitida, es señal de una responsabilidad mal ubicada o de que falta un elemento intermedio (casi siempre, un controlador). Un controlador puede apoyarse en otros controladores (en el ejemplo, los repositorios) y en fronteras hacia sistemas externos (por ejemplo, un servicio de avisos por correo). Lo que no se admite es que acceda a un sistema externo sin pasar por una frontera.
+
+**La decisión clave: dónde vive cada regla.** Cada regla del negocio que aparece en los criterios de la HU (por ejemplo, "un socio con multas no puede retirar un libro") tiene que vivir en algún lugar, y la robustez es el momento de decidirlo. Hay tres candidatos:
+
+| Opción | Dónde se valida | Problema |
+|---|---|---|
+| A | En la pantalla (boundary) | Es una frontera que decide: si mañana hay otra pantalla o una API, la regla se duplica o se pierde |
+| B | En el controlador | Funciona, pero con muchas reglas el controlador engorda y se vuelve obeso |
+| C | En la entidad | La entidad sabe qué es estar en condiciones y no se puede saltear: cualquier camino que llegue a ella pasa por la regla |
+
+La opción C suele ser la mejor por tres razones: la entidad tiene la información necesaria (criterio Experto), la regla no se puede saltear y no pueden existir estados inválidos. La pantalla puede avisar antes, lo que mejora la usabilidad, pero no reemplaza la regla del dominio: **la pantalla ayuda, el dominio garantiza**. El grupo indica en el documento, para cada regla de su HU, dónde vive y por qué.
 
 **Coherencia con la estructura.** Cada elemento del diagrama debe poder asignarse a uno de los componentes de la ficha (tabla de coherencia, sección 3.2) y a su capa. Un elemento que no pertenece a ningún componente es una alerta: o el elemento sobra, o falta un componente en la arquitectura. Las conexiones deben respetar las restricciones del estilo y de los patrones que rigen el contenedor (por ejemplo, en una arquitectura en capas, ninguna capa depende de las superiores ni se saltea una capa).
 
 **Notación.** Mermaid no tiene un tipo de diagrama de robustez; se dibuja con `flowchart` y una leyenda, como se hizo con el diagrama de flujo de datos del TP1. Se sugiere usar la forma redondeada para boundary, el círculo para controller y el rectángulo con barras para entity, y colores distintos para que se distingan. Los nombres se escriben con el tipo entre comillas angulares (`«boundary»`). El Anexo A muestra un ejemplo.
+
+**Cómo se construye, en seis pasos.**
+
+1. Leer la HU y detectar las acciones y los actores.
+2. Boundaries: todo lo que habla con los actores o con otros sistemas.
+3. Entities: los sustantivos del dominio (los de la tabla del paso 1).
+4. Controllers: los verbos que requieren lógica.
+5. Conectar los elementos según las reglas de conexión.
+6. Revisar que nada quede fuera de su lugar.
+
+Si lleva más de 10 minutos, se está sobrediseñando.
+
+**Errores típicos.**
+
+| Error | Qué pasa |
+|---|---|
+| Boundaries que deciden | Si la pantalla empieza a validar reglas o a buscar datos, la arquitectura desaparece |
+| Controllers obesos | Si el controlador hace todo, concentra la lógica y se vuelve imposible de mantener |
+| Entities que procesan | Las entidades pueden verificar su propia integridad, pero no coordinar operaciones |
+| Entidades anémicas | Si las entidades no tienen comportamiento propio, el dominio se vacía y todo queda en el controlador |
 
 ### 3.5 Paso 4 — Diagrama de secuencia
 
@@ -198,19 +229,50 @@ Reglas:
 - Cada mensaje entre elementos de **componentes distintos** debe existir en el catálogo de relaciones de la vista de componentes del TP3. Si no existe, hay dos salidas: se corrige el diseño o se actualiza el TP3, porque la arquitectura estaba incompleta. En ese caso se documenta el cambio.
 - La **táctica** del escenario de calidad de la ficha debe verse en el diagrama como una operación o un mensaje concreto (por ejemplo, una transacción, una verificación previa o una llamada a la auditoría).
 
+**Cómo se lee el diagrama.**
+
+| Elemento | Qué significa |
+|---|---|
+| Participante | Un objeto o actor; aparece arriba, en su caja |
+| Línea de vida | La vertical punteada: la existencia del participante durante la operación |
+| Mensaje | Flecha sólida: una llamada a una operación, que espera respuesta |
+| Retorno | Flecha punteada: un valor o una confirmación |
+| Tiempo | Corre de arriba hacia abajo: lo de arriba ocurre antes |
+| Fragmento | Un recuadro con una condición: `alt` (camino alternativo), `opt` (paso opcional) o `loop` (paso que se repite) |
+
+Regla práctica: cada diagrama entra en una pantalla. Si tiene 50 mensajes, no se está modelando una historia sino un sprint. Además, ninguna frontera decide, y cada mensaje tiene un responsable.
+
 **Cómo decidir qué objeto hace cada cosa.** Se aplican los criterios GRASP (patrones generales para asignar responsabilidades). Los cinco que se usan en este TP:
 
-| Criterio | Regla | Ejemplo |
-|---|---|---|
-| Experto en información | La responsabilidad se asigna a la clase que tiene los datos necesarios | `Socio` decide si puede retirar, porque conoce sus multas y sus préstamos vigentes |
-| Creador | Crea un objeto quien lo contiene, lo usa de forma directa o tiene los datos para iniciarlo | El controlador crea el `Prestamo`, porque tiene el socio y el ejemplar elegidos |
-| Controlador | Un objeto recibe y coordina el evento del sistema, sin hacer él mismo el trabajo del dominio | `ControladorPrestamos` coordina; no decide si el socio puede retirar ni guarda |
-| Bajo acoplamiento | Se prefiere la asignación que genera menos dependencias entre clases | La pantalla conoce solo al controlador |
-| Alta cohesión | Cada clase concentra responsabilidades relacionadas entre sí | Los repositorios solo guardan y recuperan |
+| Criterio | La pregunta | Regla | Ejemplo |
+|---|---|---|---|
+| Experto en información | ¿Quién tiene la información? | La responsabilidad se asigna a la clase que tiene los datos necesarios | `Socio` decide si puede retirar, porque conoce sus multas y sus préstamos vigentes |
+| Creador | ¿Quién crea la instancia? | Crea un objeto quien lo contiene, lo usa de forma directa o tiene los datos para iniciarlo | El controlador crea el `Prestamo`, porque tiene el socio y el ejemplar elegidos |
+| Controlador | ¿Quién orquesta el pedido que llega de la interfaz? | Un objeto recibe y coordina el evento del sistema, sin hacer él mismo el trabajo del dominio | `ControladorPrestamos` coordina; no decide si el socio puede retirar ni guarda |
+| Bajo acoplamiento | ¿Cómo evito que un objeto conozca detalles ajenos? | Se prefiere la asignación que genera menos dependencias entre clases | La pantalla conoce solo al controlador |
+| Alta cohesión | ¿Cada clase hace una sola cosa bien? | Cada clase concentra responsabilidades relacionadas entre sí | Los repositorios solo guardan y recuperan |
+
+**Cuando un dato pertenece a otro módulo o sistema.** Si para cumplir la HU hace falta un dato que no es de nuestro módulo (por ejemplo, saber si un docente está asignado a una materia, algo que sabe otro módulo), no hay una entidad propia que lo represente. Se modela como una **frontera hacia ese módulo**: una interfaz que el controlador usa para preguntar, sin saber cómo el otro módulo guarda sus datos. Así se mantiene el bajo acoplamiento entre módulos.
+
+**Checklist para validar la secuencia.**
+
+- ¿Cada mensaje tiene un responsable lógico?
+- ¿Hay pasos implícitos que no están modelados?
+- ¿La frontera evita tomar decisiones?
+- ¿El controlador coordina sin ahogarse?
+- ¿Las entidades mantienen la coherencia del dominio?
+- ¿El flujo es claro de principio a fin, y hay un camino de error?
 
 ### 3.6 Paso 5 — Modelo de clases
 
-El diagrama de clases se **deriva** del de secuencia: cada participante pasa a ser una clase o una interfaz, y cada mensaje recibido, a ser una operación de esa clase.
+El diagrama de clases no se inventa: se descubre a partir de la secuencia. El método es casi mecánico:
+
+1. Cada participante de la secuencia pasa a ser una clase o una interfaz.
+2. Cada mensaje que recibe pasa a ser una operación de esa clase.
+3. La información que necesita para cumplir su tarea son sus atributos.
+4. Las líneas del modelo (dependencias y asociaciones) surgen de la colaboración entre las clases.
+
+**Lo que no aparece en la secuencia no aparece en el modelo de clases, y al revés: si aparece en el modelo, tiene que tener respaldo en el comportamiento.**
 
 Reglas:
 
@@ -219,6 +281,8 @@ Reglas:
 - Las relaciones indican su tipo: asociación, dependencia (`..>`), realización de interfaz (`..|>`), herencia y composición. Se indica la multiplicidad cuando importa.
 - Las clases de dominio conservan los nombres y las relaciones del modelo de dominio del TP1. Si el diseño necesita cambiar algo (un nombre, una relación o una clase nueva), el cambio se documenta y el modelo del TP1 se actualiza.
 - El diagrama de clases es **uno solo** y reúne lo que aparece en todas las secuencias de la HU (éxito y rechazos).
+
+Para validar el modelo, se lo recorre como si se fuera el usuario y como si se fuera el sistema: ¿cada clase cumple un rol claro?, ¿cada método tiene una razón de existir?, ¿alguna clase conoce detalles técnicos que no le corresponden?
 
 ### 3.7 Justificación del diseño
 
@@ -243,6 +307,15 @@ La justificación tiene que ser honesta: más clases e interfaces tienen un cost
 | La medida del escenario tiene una prueba que la verifica | | Caso de prueba |
 
 Las diferencias que aparezcan entre el diseño y el TP3, o entre el diseño y el modelo de dominio del TP1, no son un error del grupo: el diseño se precisa al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el documento anterior se actualice.
+
+**Autoevaluación de los artefactos.** Antes de entregar, el grupo revisa cada artefacto con este criterio:
+
+| Artefacto | Criterio |
+|---|---|
+| Análisis tridimensional | Las tres dimensiones están separadas y hay al menos un atributo de calidad que condiciona una decisión |
+| Robustez | Cada elemento está en su categoría y no hay ninguna flecha prohibida |
+| Secuencia | Entra en una pantalla, tiene un camino de error, ninguna frontera decide y cada mensaje tiene un responsable |
+| Clases | Todo lo del modelo aparece en la secuencia y viceversa, y las entidades no son anémicas |
 
 **Trazabilidad.** El grupo agrega a la tabla de trazabilidad del TP3 las columnas de diseño, de modo que la HU se pueda seguir hasta el código y la prueba que la verifica:
 
@@ -817,7 +890,8 @@ class Ejemplar:
 
 ## Bibliografía
 
-- Material teórico de la materia sobre diseño tridimensional de software: análisis de funcionalidad, estructura y calidad; diagramas de robustez, de secuencia y de clases.
+- Valotto, V. *Diseño tridimensional de software*. 2025. Incluye el material de clase aplicado a un caso real (carga de una pregunta de opción múltiple): análisis de funcionalidad, estructura y calidad; diagramas de robustez, de secuencia y de clases.
+- Rosenberg, D. y Stephens, K. *Use Case Driven Object Modeling with UML: Theory and Practice*. Apress, 2007. Antecedente del diagrama de robustez.
 - Larman, C. *Applying UML and Patterns: An Introduction to Object-Oriented Analysis and Design and Iterative Development*. Prentice Hall. Referencia para los criterios GRASP.
 - Gamma, E., Helm, R., Johnson, R. y Vlissides, J. *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
 - Documentación del framework de pruebas y de la herramienta de cobertura del lenguaje elegido (por ejemplo, pytest y pytest-cov).
