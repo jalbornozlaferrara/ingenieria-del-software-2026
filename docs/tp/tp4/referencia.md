@@ -1,13 +1,14 @@
 ---
-title: TP4 — Guía de referencia
-nav_order: 4.1
+title: Guía de referencia
+parent: TP4 — Diseño Detallado, Implementación y Testing Unitario
+nav_order: 1
 ---
 
 # Ingeniería del Software - 2026 - TP 4
 
 ## Guía de referencia: cómo se hace el diseño, la implementación y las pruebas
 
-> **Qué es este documento.** Es el apoyo conceptual de la [consigna del TP4](tp4-consigna.md): explica qué es cada artefacto, qué reglas debe respetar y cómo se construye. No dice qué hay que entregar (eso está en la consigna) ni muestra un caso completo (eso está en el [ejemplo resuelto](ejemplo-resuelto-tp4.md)). Sigue el mismo orden que la consigna: cada sección se llama como el paso o la parte que explica. Los ejemplos usan una biblioteca barrial ficticia.
+> **Qué es este documento.** Es el apoyo conceptual de la [consigna del TP4](index.md): explica qué es cada artefacto, qué reglas debe respetar y cómo se construye. No dice qué hay que entregar (eso está en la consigna) ni muestra un caso completo (eso está en el [ejemplo resuelto](ejemplo-resuelto.md)). Sigue el mismo orden que la consigna: cada sección se llama como el paso o la parte que explica. Los ejemplos usan una biblioteca barrial ficticia.
 
 ---
 
