@@ -23,10 +23,10 @@ docs/
 │   ├── tp1-requerimientos.md
 │   ├── tp2-interfaz-rnf.md
 │   ├── tp3-arquitectura.md
-│   └── tp4/                ← consigna, guía de referencia y ejemplo resuelto
-│       ├── index.md
-│       ├── referencia.md
-│       └── ejemplo-resuelto.md
+│   └── tp4/                ← consigna, referencia teórica y ejemplo resuelto
+│       ├── tp4-consigna.md
+│       ├── tp4-referencia-teorica.md
+│       └── tp4-ejemplo.md
 ├── instructivos/           ← cómo trabajamos: Git, Markdown, Mermaid, GitHub Pages
 │   └── git-github-y-documentacion.md
 └── procedimientos/         ← reglas transversales a todos los TP

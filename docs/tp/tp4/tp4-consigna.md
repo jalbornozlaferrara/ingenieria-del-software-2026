@@ -2,13 +2,14 @@
 title: TP4 — Diseño Detallado, Implementación y Testing Unitario
 nav_order: 4
 has_children: true
+permalink: /tp/tp4/
 ---
 
 # Ingeniería del Software - 2026 - TP 4
 
 ## Diseño Detallado, Implementación y Testing Unitario — Consigna
 
-> **Cómo se organiza este TP.** Este documento es la **consigna**: qué hay que hacer, qué hay que entregar y cómo se verifica cada entrega. Los conceptos, las reglas y las explicaciones están en la [Guía de referencia del TP4](referencia.md), y un caso resuelto de punta a punta está en el [Ejemplo resuelto del TP4](ejemplo-resuelto.md). En cada paso, el recuadro **Para profundizar** indica qué parte de esos documentos conviene leer. La forma de trabajar es con los tres a mano: la consigna dice *qué* hacer, la referencia explica *cómo y por qué*, y el ejemplo muestra *cómo se ve*.
+> **Cómo se organiza este TP.** Este documento es la **consigna**: qué hay que hacer, qué hay que entregar y cómo se verifica cada entrega. Los conceptos, las reglas y las explicaciones están en la [Referencia teórica del TP4](tp4-referencia-teorica.md), y un caso resuelto de punta a punta está en el [Ejemplo resuelto del TP4](tp4-ejemplo.md). En cada paso, el recuadro **Para profundizar** indica qué parte de esos documentos conviene leer. La forma de trabajar es con los tres a mano: la consigna dice *qué* hacer, la referencia teórica explica *cómo y por qué*, y el ejemplo muestra *cómo se ve*.
 
 ---
 

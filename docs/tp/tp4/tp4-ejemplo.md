@@ -6,7 +6,7 @@ nav_order: 2
 
 # Ejemplo resuelto de TP4 — "Biblioteca barrial"
 
-> **Qué es este documento.** Un ejemplo completo de cómo un grupo podría resolver el TP4 siguiendo la [consigna](index.md) y la [guía de referencia](referencia.md). Usa un sistema ficticio y cotidiano para mostrar el nivel de detalle esperado en cada artefacto. No es una plantilla para copiar: cada grupo debe trabajar con su propio proyecto, su propia HU y su propia arquitectura. Los títulos coinciden con los pasos de la consigna.
+> **Qué es este documento.** Un ejemplo completo de cómo un grupo podría resolver el TP4 siguiendo la [consigna](tp4-consigna.md) y la [referencia teórica](tp4-referencia-teorica.md). Usa un sistema ficticio y cotidiano para mostrar el nivel de detalle esperado en cada artefacto. No es una plantilla para copiar: cada grupo debe trabajar con su propio proyecto, su propia HU y su propia arquitectura. Los títulos coinciden con los pasos de la consigna.
 
 El sistema es una **biblioteca barrial** ficticia. No continúa el ejemplo de los TP anteriores: se supone un TP3 mínimo (aplicación web, API y base de datos, con patrón de capas en la API) para mostrar cómo se conectan los pasos.
 
