@@ -23,7 +23,9 @@ docs/
 │   ├── tp1-requerimientos.md
 │   ├── tp2-interfaz-rnf.md
 │   ├── tp3-arquitectura.md
-│   └── tp4-diseno-detallado.md
+│   ├── tp4-consigna.md
+│   ├── tp4-guia-de-referencia.md
+│   └── ejemplo-resuelto-tp4.md
 ├── instructivos/           ← cómo trabajamos: Git, Markdown, Mermaid, GitHub Pages
 │   └── git-github-y-documentacion.md
 └── procedimientos/         ← reglas transversales a todos los TP
