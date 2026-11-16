@@ -19,7 +19,7 @@ Al finalizar este trabajo práctico, el grupo deberá ser capaz de:
 
 - Pasar de la arquitectura (TP3) al diseño detallado, tomando una historia de usuario (HU) como unidad de trabajo.
 - Analizar la HU elegida en sus tres dimensiones: **funcionalidad** (qué hace), **estructura** (qué elementos la componen) y **calidad** (qué propiedades debe cumplir).
-- Construir, para esa HU, un diagrama de **robustez** y diagramas de **secuencia** (uno por camino) antes de programar, y obtener el **modelo de clases** del código implementado, validando que coincida con lo diseñado.
+- Construir, para esa HU, un diagrama de **robustez** y diagramas de **secuencia** antes de programar, y obtener el **modelo de clases** del código implementado, validando que coincida con lo diseñado.
 - Aplicar los criterios GRASP (asignación de responsabilidades) para justificar qué clase hace cada cosa y cómo se relacionan las clases.
 - Implementar las clases e interfaces diseñadas en el lenguaje elegido por el grupo, con una interfaz gráfica mínima que permita mostrar el flujo de la HU funcionando.
 - Diseñar casos de prueba de caja negra y de caja blanca a partir de los criterios de aceptación y del código, usar la complejidad ciclomática para decidir cuántos casos de caja blanca hacen falta, y automatizarlos con un framework de pruebas (por ejemplo, pytest).
@@ -41,7 +41,7 @@ El trabajo se organiza en tres partes que se retroalimentan, todas obligatorias:
 - **Parte B:** implementación.
 - **Parte C:** pruebas unitarias.
 
-**Orden de trabajo.** Se diseña lo justo para poder programar y después se documenta lo implementado: primero los pasos 1 a 4 de la Parte A (ficha, análisis, robustez y secuencia); luego la Parte B (implementación) y, con el código funcionando, el paso 5 (modelo de clases obtenido del código), el paso 6 (coherencia y trazabilidad) y la Parte C (pruebas). Las partes se retroalimentan: si al implementar o al probar el grupo descubre que el diseño estaba mal, corrige los diagramas.
+**Orden de trabajo.** Se diseña lo justo para poder programar y después se documenta lo implementado: primero los pasos 1 a 4 de la Parte A (ficha, análisis, robustez y secuencia); luego la Parte B (implementación) y, con el código funcionando, el paso 5 (modelo de clases obtenido del código y trazabilidad) y la Parte C (pruebas). Las partes se retroalimentan: si al implementar o al probar el grupo descubre que el diseño estaba mal, corrige los diagramas.
 
 | Fecha | Actividad en clase |
 |---|---|
@@ -75,16 +75,15 @@ Se parte de la HU y de sus criterios de aceptación (Given-When-Then) escritos e
 
 ## 4. Parte A: Diseño detallado de la HU
 
-El diseño se hace en seis pasos: los cinco de diseño y una verificación final de coherencia. **Los pasos 1 a 4 se hacen antes de programar** y cada uno produce un resultado que el siguiente transforma: la secuencia usa los participantes de la robustez, y si al dibujar un diagrama el grupo descubre que falta algo, vuelve al anterior y lo corrige. **El paso 5 (modelo de clases) y el paso 6 (coherencia y trazabilidad) se hacen después de implementar** (Parte B), porque el modelo de clases se obtiene del código.
+El diseño se hace en cinco pasos. **Los pasos 1 a 4 se hacen antes de programar** y cada uno produce un resultado que el siguiente transforma: la secuencia usa los participantes de la robustez, y si al dibujar un diagrama el grupo descubre que falta algo, vuelve al anterior y lo corrige. **El paso 5 (modelo de clases y trazabilidad) se hace después de implementar** (Parte B), porque el modelo de clases se obtiene del código.
 
 | Paso | Qué se entrega | Para profundizar |
 |---|---|---|
 | 1. Ficha de la HU | Tabla de coherencia y tabla de entidades del dominio | Referencia: «Paso 1» · Ejemplo: «Paso 1» |
 | 2. Análisis tridimensional | Tabla de las tres dimensiones | Referencia: «Paso 2» · Ejemplo: «Paso 2» |
 | 3. Diagrama de robustez | Diagrama y reglas de negocio ubicadas | Referencia: «Paso 3» · Ejemplo: «Paso 3» |
-| 4. Diagramas de secuencia | Un diagrama por camino y asignación de responsabilidades | Referencia: «Paso 4» · Ejemplo: «Paso 4» |
-| 5. Modelo de clases (después de implementar) | Diagrama de clases obtenido del código, su validación contra el diseño y la justificación | Referencia: «Paso 5» y «Justificación del diseño» · Ejemplo: «Paso 5» |
-| 6. Coherencia y trazabilidad (después de implementar) | Verificación contra el TP3 y el TP1, y tabla de trazabilidad | Referencia: «Coherencia con la arquitectura y trazabilidad» · Ejemplo: «Trazabilidad y pruebas» |
+| 4. Diagramas de secuencia | Un diagrama por camino, o uno solo con las variantes, y asignación de responsabilidades | Referencia: «Paso 4» · Ejemplo: «Paso 4» |
+| 5. Modelo de clases y trazabilidad (después de implementar) | Diagrama de clases obtenido del código, su validación contra el diseño, la justificación y la tabla de trazabilidad | Referencia: «Paso 5», «Justificación del diseño» y «Trazabilidad» · Ejemplo: «Paso 5» |
 
 ### Paso 1 — Ficha de la HU
 
@@ -116,7 +115,7 @@ El diseño se hace en seis pasos: los cinco de diseño y una verificación final
 
 **Qué se entrega**
 
-- **Un diagrama de secuencia por camino** que piden los criterios de aceptación: el flujo principal y los rechazos. Todos usan los participantes del diagrama de robustez.
+- **Los diagramas de secuencia** que cubren los caminos que piden los criterios de aceptación: el flujo principal y los rechazos. El grupo elige cómo: **un diagrama por camino**, o **un solo diagrama** que muestre el rechazo con un fragmento `alt`. En los dos casos se usan los participantes del diagrama de robustez. Los mensajes pueden escribirse como frases o como llamadas a operaciones; lo que importa es que cada uno tenga un responsable.
 - Una tabla de asignación de responsabilidades: qué objeto hace cada cosa y con qué criterio GRASP.
 
 **Cómo se sabe que está bien:** cada diagrama entra en una pantalla, hay un camino de error, ninguna frontera decide y cada mensaje tiene un responsable. Cada mensaje entre componentes distintos existe en el catálogo de relaciones del TP3, y la táctica del escenario de calidad se ve como una operación o un mensaje concreto.
@@ -129,28 +128,11 @@ El diseño se hace en seis pasos: los cinco de diseño y una verificación final
 - La **validación del diagrama**: una tabla breve que contrasta el diagrama obtenido con la robustez y las secuencias, e indica cada diferencia con su resolución (se corrigió el código o se actualizó el diagrama de diseño, y por qué). Sirve para comprobar que el comportamiento implementado coincide con lo modelado.
 - La **justificación del diseño**: qué responsabilidad tiene cada clase principal y con qué criterio GRASP se la asignó, y las decisiones de diseño tomadas (por ejemplo, por qué hay una interfaz en un lugar o por qué una regla vive en una entidad). Si se usa un patrón de diseño, se nombra, se indica el problema que resuelve y dónde está en el diagrama. Los patrones son opcionales.
 
-**Cómo se sabe que está bien:** el diagrama coincide con el código, todo lo que aparece en él tiene respaldo en las secuencias y viceversa (o la diferencia está explicada), y las entidades no son anémicas.
+- La **tabla de trazabilidad**, que agrega a la del TP3 las columnas de diseño: HU → componente C4 → clases → archivo → pruebas.
 
-### Paso 6 — Coherencia con la arquitectura y trazabilidad
+Si al comparar con el diseño aparece una diferencia con el TP3 o con el modelo de dominio del TP1 (una relación que falta en el catálogo, una entidad nueva), no es un error del grupo: se documenta y se actualiza el documento anterior.
 
-**Qué se entrega**
-
-- Una **tabla de verificación de coherencia**, completada con la evidencia de cada punto:
-
-| Verificación | ¿Se cumple? | Evidencia |
-|---|---|---|
-| Cada participante de las secuencias pertenece a un componente de la ficha | | Tabla participante → componente |
-| Cada mensaje entre componentes está en el catálogo de relaciones del TP3 | | Secuencia y catálogo |
-| El diseño respeta las restricciones del estilo y de los patrones del contenedor | | Tabla de restricciones del TP3 |
-| La táctica del escenario de calidad aparece como operación o mensaje | | Secuencia |
-| Cada entidad del diagrama de robustez está en el modelo de dominio del TP1 (o se agregó a él) | | Tabla de entidades del Paso 1 |
-| Cada entidad que interviene según el Paso 1 aparece en el diseño, o se explica por qué no | | Diagramas de robustez y de clases |
-| La medida del escenario tiene una prueba que la verifica | | Caso de prueba |
-
-- Las **actualizaciones** al TP3 y al modelo de dominio del TP1 que hayan surgido de la verificación, si las hubo.
-- Una **tabla de trazabilidad** que agrega a la del TP3 las columnas de diseño: HU → componente C4 → clases → archivo → pruebas.
-
-**Cómo se sabe que está bien:** todo criterio de aceptación de la HU llega al menos a una prueba, y toda clase del diagrama aparece en alguna secuencia.
+**Cómo se sabe que está bien:** el diagrama coincide con el código, todo lo que aparece en él tiene respaldo en las secuencias y viceversa (o la diferencia está explicada), las entidades no son anémicas, todo criterio de aceptación de la HU llega al menos a una prueba y toda clase del diagrama aparece en alguna secuencia.
 
 ---
 
@@ -225,10 +207,9 @@ La IA suele proponer diseños con más clases, más interfaces y más patrones d
 - [ ] Tabla de entidades del modelo de dominio del TP1 que intervienen en la HU y, si hizo falta, el cambio al modelo.
 - [ ] Análisis tridimensional de la HU.
 - [ ] Diagrama de robustez, con la ubicación de cada regla de negocio.
-- [ ] Un diagrama de secuencia por camino (éxito y rechazos), con las responsabilidades justificadas con GRASP.
+- [ ] Diagramas de secuencia que cubran el éxito y los rechazos (uno por camino o uno solo con `alt`), con las responsabilidades justificadas con GRASP.
 - [ ] Un diagrama de clases obtenido del código implementado, con su validación contra la robustez y las secuencias (diferencias y resoluciones).
 - [ ] Justificación del diseño (criterios GRASP y, si los hay, patrones de diseño usados).
-- [ ] Verificación de coherencia con la arquitectura y, si corresponde, actualización del TP3.
 - [ ] Tabla de trazabilidad HU → componente C4 → clases → archivo → pruebas.
 
 **Implementación (Parte B)**
@@ -275,8 +256,8 @@ La defensa incluye una **demostración del sistema funcionando**, a partir del r
 | Sección | Qué contiene |
 |---|---|
 | 1. Introducción | Propósito, HU elegida, motivo de la elección y siglas usadas |
-| 2. Relación con la arquitectura | Tabla de coherencia: `EC-xx`, táctica y `DA-xx`; componentes y capas que atraviesa; estilo y patrones; verificación de coherencia |
-| 3. Diseño de la HU | Enunciado y criterios, entidades del modelo de dominio que intervienen, análisis tridimensional, diagrama de robustez, diagramas de secuencia (uno por camino) con la asignación de responsabilidades |
+| 2. Relación con la arquitectura | Tabla de coherencia: `EC-xx`, táctica y `DA-xx`; componentes y capas que atraviesa; estilo y patrones |
+| 3. Diseño de la HU | Enunciado y criterios, entidades del modelo de dominio que intervienen, análisis tridimensional, diagrama de robustez, diagramas de secuencia con la asignación de responsabilidades |
 | 4. Modelo de clases | Un diagrama obtenido del código implementado y su validación contra las secuencias |
 | 5. Justificación del diseño | Asignación de responsabilidades (GRASP), decisiones de diseño y patrones de diseño usados, si los hay |
 | 6. Implementación | Estructura del código, cómo se ejecuta y cómo se reemplazan la persistencia y los servicios externos |

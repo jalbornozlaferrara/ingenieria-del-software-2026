@@ -14,7 +14,7 @@ nav_order: 1
 
 ## Visión general: el recorrido por pasos
 
-El diseño detallado se hace sobre la **historia de usuario elegida**, en cinco pasos, más una verificación final de coherencia. Cada paso produce un resultado que el siguiente transforma:
+El diseño detallado se hace sobre la **historia de usuario elegida**, en cinco pasos. Cada paso produce un resultado que el siguiente transforma:
 
 ```mermaid
 flowchart LR
@@ -31,7 +31,7 @@ flowchart LR
 | 1. Seleccionar la funcionalidad | ¿Qué HU se diseña y qué dice su criterio de aceptación? | HU elegida, con su relación con el TP3 |
 | 2. Análisis tridimensional | ¿Qué hace, con qué se hace y qué propiedades debe cumplir? | Tabla de las tres dimensiones |
 | 3. Diagrama de robustez | ¿Qué elementos intervienen y de qué tipo son? | Diagrama de robustez |
-| 4. Diagrama de secuencia | ¿En qué orden colaboran y quién tiene cada responsabilidad? | Diagrama de secuencia |
+| 4. Diagrama de secuencia | ¿En qué orden colaboran y quién tiene cada responsabilidad? | Diagrama o diagramas de secuencia |
 | 5. Modelo de clases | ¿Qué clases, atributos, operaciones y relaciones tiene el código y coinciden con el diseño? | Diagrama de clases obtenido del código, con su validación |
 
 Los pasos 1 a 4 se hacen **antes de programar**, en ese orden, porque la secuencia usa los participantes de la robustez: lo que no aparece en el diagrama de robustez no se invoca en el de secuencia. La secuencia es el plano que se implementa: cada participante pasa a ser una clase y cada mensaje, una operación.
@@ -161,8 +161,8 @@ El diagrama de secuencia muestra, en orden, qué mensajes se envían los element
 Reglas:
 
 - Los participantes son los elementos del diagrama de robustez (más el actor). No se agregan elementos nuevos sin volver a robustez.
-- Se dibuja una secuencia por **camino** que piden los criterios de aceptación: una para el flujo principal y otra para los rechazos (por ejemplo, el rechazo porque el socio tiene multas). Todas usan los mismos participantes de la robustez. Con `alt` u `opt` se muestran las variantes pequeñas dentro de un mismo camino.
-- Los mensajes son llamadas con nombre y parámetros reales (`tomar()`, `motivo_de_rechazo()`), no frases ("verifica si está libre").
+- Se cubren los **caminos** que piden los criterios de aceptación: el flujo principal y los rechazos (por ejemplo, el rechazo porque el socio tiene multas). El grupo elige cómo: **un diagrama por camino** (más claro cuando los caminos son muy distintos) o **un solo diagrama** que muestre el rechazo con un fragmento `alt` (más corto cuando el rechazo es una bifurcación simple). Todos usan los mismos participantes de la robustez. Con `alt` u `opt` también se muestran las variantes pequeñas dentro de un camino.
+- Los mensajes pueden escribirse como una frase ("verifica si está libre") o como una llamada (`tomar()`, `motivo_de_rechazo()`). Lo que se exige es que cada mensaje tenga un **responsable** y que se entienda sin ambigüedad. Al implementar, cada mensaje se convierte en una operación, y los nombres definitivos quedan en el código y en el diagrama de clases que se obtiene de él.
 - Cada mensaje entre elementos de **componentes distintos** debe existir en el catálogo de relaciones de la vista de componentes del TP3. Si no existe, hay dos salidas: se corrige el diseño o se actualiza el TP3, porque la arquitectura estaba incompleta. En ese caso se documenta el cambio.
 - La **táctica** del escenario de calidad de la ficha debe verse en el diagrama como una operación o un mensaje concreto (por ejemplo, una transacción, una verificación previa o una llamada a la auditoría).
 
@@ -244,17 +244,36 @@ La justificación tiene que ser honesta: más clases e interfaces tienen un cost
 
 ---
 
-## Coherencia con la arquitectura y trazabilidad
+## Trazabilidad
 
-Con el código implementado y el modelo de clases obtenido, se comprueba que las tres dimensiones de la tabla de coherencia (Paso 1) quedaron reflejadas en el diseño. Esa verificación consiste en responder, con evidencia, siete preguntas: si cada participante de las secuencias pertenece a un componente de la ficha, si cada mensaje entre componentes está en el catálogo de relaciones del TP3, si el diseño respeta las restricciones del estilo y de los patrones, si la táctica del escenario aparece como operación o mensaje, si cada entidad del diagrama de robustez está en el modelo de dominio, si cada entidad que interviene aparece en el diseño y si la medida del escenario tiene una prueba. La tabla para completar está en la consigna.
+Con el código implementado y el modelo de clases obtenido, se arma la tabla de trazabilidad. La cadena del TP3 (escenario → táctica → estilo o patrón → decisión → elemento C4) se extiende con las columnas de diseño, de modo que la HU se pueda seguir hasta el código y la prueba que la verifica: HU → componente C4 → clases → archivo → pruebas. Todo criterio de aceptación debe llegar al menos a una prueba, y toda clase del diagrama debe aparecer en algún diagrama de secuencia. El ejemplo resuelto muestra la tabla completa.
 
-Las diferencias que aparezcan entre el diseño y el TP3, o entre el diseño y el modelo de dominio del TP1, no son un error del grupo: el diseño se precisa al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el documento anterior se actualice.
-
-**Trazabilidad.** La cadena de trazabilidad del TP3 (escenario → táctica → estilo o patrón → decisión → elemento C4) se extiende con las columnas de diseño, de modo que la HU se pueda seguir hasta el código y la prueba que la verifica: HU → componente C4 → clases → archivo → pruebas. Todo criterio de aceptación debe llegar al menos a una prueba, y toda clase del diagrama debe aparecer en algún diagrama de secuencia. El ejemplo resuelto muestra la tabla completa.
+Las diferencias que aparezcan entre el diseño y el TP3, o entre el diseño y el modelo de dominio del TP1 (por ejemplo, una relación que falta en el catálogo o una entidad nueva), no son un error del grupo: el diseño se precisa al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el documento anterior se actualice.
 
 ---
 
 ## Parte B — Implementación
+
+### De la robustez y la secuencia a las clases
+
+Cada elemento del diagrama de robustez se convierte en código de una manera distinta:
+
+| En la robustez | En la implementación | Dónde vive |
+|---|---|---|
+| **Actor** | No es una clase: es quien usa el sistema | Afuera del código |
+| **Boundary** (frontera) | Una clase de la interfaz: pantalla, formulario o endpoint. Si habla con otro sistema, es una **interfaz** con una versión simulada | `interfaz/` |
+| **Controller** | Una clase que coordina la operación de la HU: recibe el pedido de la frontera y llama a las entidades y a los repositorios | `aplicacion/` |
+| **Entity** | Una clase del dominio, con sus datos **y** sus reglas | `dominio/` |
+| Repositorio | No figura como clase propia en la robustez (se dibuja como controlador técnico). Aparece en la secuencia cuando el controlador busca o guarda. Es una interfaz con una implementación en memoria o con base real | La interfaz en `aplicacion/`, la implementación en `infraestructura/` |
+
+**Orden de construcción.**
+
+1. **Las entidades.** Cada entity es una clase del dominio. Sus operaciones salen de los mensajes que reciben en las secuencias, y la regla de negocio va dentro de la entidad.
+2. **El controlador.** Cada mensaje que recibe es un método. Recibe sus repositorios por el constructor.
+3. **Las interfaces de repositorio**, cada vez que la secuencia muestra al controlador buscando o guardando, y una implementación en memoria.
+4. **La frontera**, al final: es la capa más delgada, llama al controlador y muestra la respuesta, sin reglas de negocio.
+
+La regla para decidir qué es una clase se resume así: **cada participante de la secuencia es una clase y cada mensaje es un método**. Lo que no aparece en las secuencias no se programa. También aparecen clases auxiliares que las secuencias piden (por ejemplo, `Respuesta`, que lleva el resultado o el motivo del rechazo). Si el lenguaje no usa clases, un controlador puede ser un módulo con funciones: la regla se mantiene (la regla de negocio va en el dominio, la frontera no decide y el controlador coordina).
 
 ### Estructura del proyecto
 
@@ -300,12 +319,11 @@ El repositorio incluye en su `README.md` las instrucciones para instalar las dep
 
 ### Qué es probar software y qué se prueba en este TP
 
-**Probar** es ejecutar el software con datos elegidos para comparar lo que hace con lo que debería hacer, con el objetivo de encontrar defectos. Una prueba no demuestra que el software es correcto: solo puede mostrar que, para esos datos, se comporta como se espera o que falla. Tres términos que conviene distinguir:
+**Probar** es ejecutar el software con datos elegidos para comparar lo que hace con lo que debería hacer, con el objetivo de encontrar defectos. Una prueba no demuestra que el software es correcto: solo puede mostrar que, para esos datos, se comporta como se espera o que falla. Dos términos que conviene distinguir:
 
 | Término | Qué es |
 |---|---|
-| Caso de prueba | Una combinación de datos de entrada, estado inicial y resultado esperado |
-| Oráculo | Lo que permite saber cuál es el resultado esperado (en este TP, los criterios de aceptación y las reglas del dominio) |
+| Caso de prueba | Una combinación de datos de entrada, estado inicial y resultado esperado, que en este TP se toma de los criterios de aceptación y de las reglas del dominio |
 | Defecto | Un error en el código que puede producir una falla cuando se ejecuta en ciertas condiciones |
 
 Las pruebas se organizan en **niveles**, según qué parte del sistema se ejercita:

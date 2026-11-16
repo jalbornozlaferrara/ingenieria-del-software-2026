@@ -88,17 +88,17 @@ flowchart LR
     so[["«entity»<br/>Socio"]]
     ej[["«entity»<br/>Ejemplar"]]
     pr[["«entity»<br/>Prestamo"]]
-    bib --> ui
-    ui --> cp
-    cp --> rs
-    cp --> re
-    cp --> rp
-    rs --> so
-    re --> ej
-    rp --> pr
-    cp --> so
-    cp --> ej
-    cp --> pr
+    bib -->|usa| ui
+    ui -->|delega la operación| cp
+    cp -->|pide el socio| rs
+    cp -->|pide el ejemplar| re
+    cp -->|guarda el préstamo| rp
+    rs -->|obtiene| so
+    re -->|obtiene| ej
+    rp -->|guarda| pr
+    cp -->|ejecuta la regla| so
+    cp -->|ejecuta la regla| ej
+    cp -->|crea| pr
     classDef actor fill:#f3f4f6,stroke:#4b5563,color:#111827,stroke-dasharray: 4 3
     classDef boundary fill:#dbeafe,stroke:#1d4ed8,color:#0f172a
     classDef controller fill:#ffedd5,stroke:#c2410c,color:#0f172a
@@ -109,11 +109,30 @@ flowchart LR
     class so,ej,pr entity
 ```
 
+**Cómo leer el diagrama.** Cada flecha dice qué le pide un elemento a otro, y cada una responde a una decisión:
+
+| Relación | Qué representa | Por qué está |
+|---|---|---|
+| `Bibliotecario/a → PantallaPrestamo` | El actor usa la frontera | El actor solo habla con la pantalla |
+| `PantallaPrestamo → ControladorPrestamos` | La pantalla delega la operación | La pantalla no decide ni toca el dominio |
+| `ControladorPrestamos → RepositorioSocios` | El controlador **pide** el socio | Necesita buscar el objeto antes de usarlo |
+| `RepositorioSocios → Socio` | El repositorio **obtiene** socios | Es quien sabe dónde están los socios |
+| `ControladorPrestamos → Socio` | El controlador le pide a la entidad que **ejecute su regla** (`motivo_de_rechazo()`) | La regla de rechazo vive en `Socio`, no en el controlador |
+| `ControladorPrestamos → Ejemplar` | El controlador le pide `tomar()` | La disponibilidad es una regla de `Ejemplar` |
+| `ControladorPrestamos → Prestamo` | El controlador **crea** el préstamo | Coordina y tiene los datos para crearlo |
+| `RepositorioPrestamos → Prestamo` | El repositorio **guarda** el préstamo | Persistir es un trabajo técnico, sin reglas de negocio |
+
+**¿Por qué el controlador se conecta al repositorio y también a `Socio`?** Son dos relaciones distintas. Con el **repositorio**, el controlador *obtiene* la entidad: es una relación técnica de acceso. Con `Socio`, ya con el objeto en mano, el controlador *le pide que ejecute su regla*: es una relación de comportamiento. Si solo existiera la flecha por el repositorio, no se vería que la regla vive en la entidad; si solo existiera la flecha a `Socio`, no se vería de dónde sale el objeto.
+
+**¿Por qué los repositorios son «controller»?** Porque no tienen reglas de negocio: buscan y guardan. En la robustez se dibujan como controladores técnicos, y las reglas permiten controlador → controlador y controlador → entidad.
+
+**¿Por qué no hay otras flechas?** La pantalla no se conecta a repositorios ni a entidades, porque una frontera no decide. Cada repositorio atiende a una sola entidad, por lo que no se conectan entre sí. `Prestamo` no aparece conectado a `Socio` ni a `Ejemplar` en este diagrama: esa relación ya existe en el modelo de dominio.
+
 Las tres entidades salen de la tabla del paso 1. Se verifican las reglas de conexión (Referencia, Paso 3): el actor solo toca la pantalla, la pantalla solo toca al controlador, y ninguna entidad se accede desde una frontera. Cada elemento pertenece a un componente del TP3: la pantalla a la aplicación web, el controlador y las entidades a «Servicio de préstamos» y los repositorios a «Acceso a datos».
 
 ## Paso 4 — Diagramas de secuencia
 
-Se dibujan dos secuencias con los mismos participantes: una para el camino de éxito y otra para los rechazos.
+Se dibujan dos secuencias con los mismos participantes: una para el camino de éxito y otra para los rechazos. También se podría hacer un solo diagrama con un fragmento `alt` para el rechazo; el grupo elige.
 
 **Secuencia A: camino de éxito**
 
@@ -144,6 +163,18 @@ sequenceDiagram
     CP-->>UI: Respuesta(aceptado, fecha_devolucion)
     UI-->>Bib: muestra la fecha de devolución
 ```
+
+**Cómo se lee la secuencia A.**
+
+1. El bibliotecario/a confirma en la pantalla. La pantalla no decide: llama al controlador con `prestar(socio_id, ejemplar_id)`.
+2. El controlador le pide el socio al `RepositorioSocios`.
+3. Le pregunta al `Socio` `motivo_de_rechazo()`. La regla de si puede retirar (activo, sin multas, bajo el límite) vive en `Socio` porque es quien tiene esa información. La respuesta "nada" significa que puede retirar.
+4. Pide el ejemplar al `RepositorioEjemplares` y le ejecuta `tomar()`. El ejemplar verifica y marca que está prestado en un solo paso, y eso es lo que resuelve `EC-02`. La respuesta "tomado" indica que se lo pudo reservar.
+5. El controlador crea el `Prestamo` con el socio, el ejemplar y la fecha de hoy. El préstamo calcula la fecha de devolución (14 días después).
+6. Le pide al socio que registre el préstamo (suma uno a sus préstamos vigentes) y guarda el préstamo en el `RepositorioPrestamos`.
+7. El controlador devuelve una `Respuesta` aceptada con la fecha de devolución, y la pantalla la muestra.
+
+Las dos decisiones (socio y ejemplar) están antes de crear o guardar nada, así que un rechazo no deja cambios a medias. Esto responde al criterio de aceptación 1.
 
 **Secuencia B: caminos de rechazo**
 
@@ -177,6 +208,13 @@ sequenceDiagram
         end
     end
 ```
+
+**Cómo se lee la secuencia B.** Comienza igual que la A: la pantalla llama a `prestar`, el controlador obtiene el socio y le pregunta `motivo_de_rechazo()`. Desde ahí hay dos bifurcaciones, cada una un fragmento `alt`:
+
+1. **El socio no puede retirar** (criterio de aceptación 2): el socio devuelve el motivo (con multas, inactivo o en el límite de préstamos), el controlador responde `rechazado` con ese motivo y la pantalla lo muestra. No se toca el ejemplar.
+2. **El socio puede retirar:** el controlador sigue con el ejemplar y ejecuta `tomar()`. Si el ejemplar **ya estaba prestado** (criterio 3, incluido el caso de dos pedidos simultáneos), `tomar()` devuelve "no tomado", el controlador responde `rechazado` con "no disponible" y la pantalla lo informa.
+
+La rama en la que `tomar()` tiene éxito sigue como en la secuencia A y no se repite. Si el grupo prefiere un solo diagrama, bastaría agregar esa rama como la otra opción del segundo `alt`.
 
 Asignación de responsabilidades:
 
@@ -304,6 +342,17 @@ classDiagram
     RepositorioEjemplaresEnMemoria ..|> RepositorioEjemplares
     RepositorioPrestamosEnMemoria ..|> RepositorioPrestamos
 ```
+
+**Trazabilidad.** La tabla agrega a la del TP3 las columnas de diseño (clases, archivo y pruebas):
+
+| HU | Componente C4 | Clases | Archivo | Pruebas |
+|---|---|---|---|---|
+| `HU-03` | Aplicación web | `PantallaPrestamo` | `src/interfaz/pantalla_prestamo.py` | No se prueba por la interfaz |
+| `HU-03` | «Servicio de préstamos» | `ControladorPrestamos` | `src/aplicacion/controlador_prestamos.py` | `CP-01`, `CP-02`, `CP-05` |
+| `HU-03` | «Servicio de préstamos» | `Socio` | `src/dominio/socio.py` | `CP-02`, `CP-03`, `CP-04` |
+| `HU-03`, `EC-02` | «Servicio de préstamos» | `Ejemplar` | `src/dominio/ejemplar.py` | `CP-05`, `CP-06` |
+| `HU-03` | «Servicio de préstamos» | `Prestamo` | `src/dominio/prestamo.py` | `CP-01` |
+| `HU-03` | «Acceso a datos» | Repositorios (interfaz y versión en memoria) | `src/infraestructura/repositorios_en_memoria.py` | Se usan como dobles de prueba en todas |
 
 ## Trazabilidad y pruebas
 
