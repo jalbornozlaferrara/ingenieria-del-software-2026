@@ -189,7 +189,59 @@ Asignación de responsabilidades:
 | Coordinar el flujo | `ControladorPrestamos` | Controlador |
 | Obtener y guardar | Repositorios | Alta cohesión y bajo acoplamiento: el controlador no sabe cómo se guarda |
 
-## Paso 5 — Modelo de clases
+## Parte B — Implementación (fragmento del código)
+
+El ejemplo está en Python, pero nada del diseño depende del lenguaje: las clases, las interfaces y las pruebas se escriben igual en Java, JavaScript, C# u otro.
+
+```python
+# src/aplicacion/controlador_prestamos.py
+class ControladorPrestamos:
+    def __init__(self, socios, ejemplares, prestamos, hoy=date.today):
+        self._socios = socios
+        self._ejemplares = ejemplares
+        self._prestamos = prestamos
+        self._hoy = hoy
+
+    def prestar(self, socio_id: str, ejemplar_id: str) -> Respuesta:
+        socio = self._socios.socio(socio_id)
+        motivo = socio.motivo_de_rechazo()
+        if motivo:
+            return Respuesta(False, motivo)
+        ejemplar = self._ejemplares.ejemplar(ejemplar_id)
+        if not ejemplar.tomar():
+            return Respuesta(False, "el ejemplar no está disponible")
+        prestamo = Prestamo(socio_id, ejemplar_id, self._hoy())
+        socio.registrar_prestamo()
+        self._prestamos.guardar(prestamo)
+        return Respuesta(True, None, prestamo.fecha_devolucion)
+```
+
+```python
+# src/dominio/ejemplar.py
+class Ejemplar:
+    def __init__(self, id: str, titulo: str):
+        self.id, self.titulo = id, titulo
+        self._disponible = True
+        self._lock = Lock()
+
+    def tomar(self) -> bool:
+        with self._lock:                # verifica y marca en un solo paso (EC-02)
+            if not self._disponible:
+                return False
+            self._disponible = False
+            return True
+```
+
+## Paso 5 — Modelo de clases (obtenido del código)
+
+El diagrama se obtuvo **después de implementar**, a partir del código de la sección anterior: se generó con una herramienta (en Python, `pyreverse`) y se limpió para dejar solo las clases de la HU. Se lo contrastó con la robustez y las secuencias:
+
+| Diferencia encontrada | Qué estaba mal | Qué se hizo |
+|---|---|---|
+| `Prestamo` aparecía con un método `renovar()` que ninguna secuencia usa | El código tenía algo que el diseño no pedía | Se quitó del código |
+| La secuencia llamaba a `socio.registrar_prestamo()` y el código lo hacía el controlador con un contador propio | El código, que ponía una regla fuera de la entidad | Se movió a `Socio.registrar_prestamo()`, como indica la robustez |
+
+Con las dos correcciones, el diagrama coincide con las secuencias. El fragmento de código de la sección anterior es la versión ya corregida.
 
 ```mermaid
 classDiagram
@@ -253,49 +305,6 @@ classDiagram
     RepositorioPrestamosEnMemoria ..|> RepositorioPrestamos
 ```
 
-## Código (fragmento)
-
-El ejemplo está en Python, pero nada del diseño depende del lenguaje: las clases, las interfaces y las pruebas se escriben igual en Java, JavaScript, C# u otro.
-
-```python
-# src/aplicacion/controlador_prestamos.py
-class ControladorPrestamos:
-    def __init__(self, socios, ejemplares, prestamos, hoy=date.today):
-        self._socios = socios
-        self._ejemplares = ejemplares
-        self._prestamos = prestamos
-        self._hoy = hoy
-
-    def prestar(self, socio_id: str, ejemplar_id: str) -> Respuesta:
-        socio = self._socios.socio(socio_id)
-        motivo = socio.motivo_de_rechazo()
-        if motivo:
-            return Respuesta(False, motivo)
-        ejemplar = self._ejemplares.ejemplar(ejemplar_id)
-        if not ejemplar.tomar():
-            return Respuesta(False, "el ejemplar no está disponible")
-        prestamo = Prestamo(socio_id, ejemplar_id, self._hoy())
-        socio.registrar_prestamo()
-        self._prestamos.guardar(prestamo)
-        return Respuesta(True, None, prestamo.fecha_devolucion)
-```
-
-```python
-# src/dominio/ejemplar.py
-class Ejemplar:
-    def __init__(self, id: str, titulo: str):
-        self.id, self.titulo = id, titulo
-        self._disponible = True
-        self._lock = Lock()
-
-    def tomar(self) -> bool:
-        with self._lock:                # verifica y marca en un solo paso (EC-02)
-            if not self._disponible:
-                return False
-            self._disponible = False
-            return True
-```
-
 ## Trazabilidad y pruebas
 
 | Criterio / escenario | Caso de prueba | Prueba |
@@ -306,3 +315,13 @@ class Ejemplar:
 | Criterio 2, borde | `CP-04` | `test_en_el_borde_con_dos_prestamos_todavia_puede_retirar` |
 | Criterio 3 | `CP-05` | `test_rechaza_si_el_ejemplar_ya_esta_prestado` |
 | `EC-02` | `CP-06` | `test_dos_prestamos_simultaneos_del_mismo_ejemplar_solo_concretan_uno` |
+
+**Complejidad ciclomática de las operaciones de la HU** (criterio de la caja blanca; solo las operaciones que implementa esta HU):
+
+| Operación | Decisiones | Complejidad | Pruebas, una por camino |
+|---|---|---|---|
+| `Socio.motivo_de_rechazo` | 3 (inactivo, con multas, en el límite) | 4 | `CP-02` (multas), `CP-03` (límite), una de socio inactivo y `CP-01` (habilitado) |
+| `ControladorPrestamos.prestar` | 2 (socio rechazado, ejemplar no tomado) | 3 | `CP-02` (rechazo del socio), `CP-05` (ejemplar no disponible) y `CP-01` (éxito) |
+| `Ejemplar.tomar` | 1 (no disponible) | 2 | `CP-05` y `CP-01` |
+
+Los casos de caja negra (`CP-04`, el borde de dos préstamos) usan valores límite. El reporte de cobertura de ramas confirma que no queda ningún camino sin recorrer.

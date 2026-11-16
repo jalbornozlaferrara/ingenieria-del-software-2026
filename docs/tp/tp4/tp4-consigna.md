@@ -19,10 +19,10 @@ Al finalizar este trabajo práctico, el grupo deberá ser capaz de:
 
 - Pasar de la arquitectura (TP3) al diseño detallado, tomando una historia de usuario (HU) como unidad de trabajo.
 - Analizar la HU elegida en sus tres dimensiones: **funcionalidad** (qué hace), **estructura** (qué elementos la componen) y **calidad** (qué propiedades debe cumplir).
-- Construir, para esa HU, un diagrama de **robustez**, diagramas de **secuencia** (uno por camino) y un **modelo de clases**, de modo que cada uno se derive del anterior.
+- Construir, para esa HU, un diagrama de **robustez** y diagramas de **secuencia** (uno por camino) antes de programar, y obtener el **modelo de clases** del código implementado, validando que coincida con lo diseñado.
 - Aplicar los criterios GRASP (asignación de responsabilidades) para justificar qué clase hace cada cosa y cómo se relacionan las clases.
 - Implementar las clases e interfaces diseñadas en el lenguaje elegido por el grupo, con una interfaz gráfica mínima que permita mostrar el flujo de la HU funcionando.
-- Diseñar casos de prueba de caja negra y de caja blanca a partir de los criterios de aceptación y del código, y automatizarlos con un framework de pruebas (por ejemplo, pytest).
+- Diseñar casos de prueba de caja negra y de caja blanca a partir de los criterios de aceptación y del código, usar la complejidad ciclomática para decidir cuántos casos de caja blanca hacen falta, y automatizarlos con un framework de pruebas (por ejemplo, pytest).
 - Medir la cobertura de las pruebas e interpretar el reporte.
 - Mantener la trazabilidad entre HU, componente del modelo C4, diagramas de diseño, clases, código y pruebas.
 - Utilizar inteligencia artificial (IA) como apoyo para diseñar, programar y probar, ejerciendo el criterio propio del equipo y documentando el proceso.
@@ -40,6 +40,8 @@ El trabajo se organiza en tres partes que se retroalimentan, todas obligatorias:
 - **Parte A:** diseño detallado de la HU.
 - **Parte B:** implementación.
 - **Parte C:** pruebas unitarias.
+
+**Orden de trabajo.** Se diseña lo justo para poder programar y después se documenta lo implementado: primero los pasos 1 a 4 de la Parte A (ficha, análisis, robustez y secuencia); luego la Parte B (implementación) y, con el código funcionando, el paso 5 (modelo de clases obtenido del código), el paso 6 (coherencia y trazabilidad) y la Parte C (pruebas). Las partes se retroalimentan: si al implementar o al probar el grupo descubre que el diseño estaba mal, corrige los diagramas.
 
 | Fecha | Actividad en clase |
 |---|---|
@@ -73,7 +75,7 @@ Se parte de la HU y de sus criterios de aceptación (Given-When-Then) escritos e
 
 ## 4. Parte A: Diseño detallado de la HU
 
-El diseño se hace en seis pasos: los cinco de diseño y una verificación final de coherencia. Cada paso produce un resultado que el siguiente transforma. Los pasos 3, 4 y 5 se hacen en ese orden porque cada diagrama se deriva del anterior: si al dibujar uno el grupo descubre que falta algo, vuelve al anterior y lo corrige.
+El diseño se hace en seis pasos: los cinco de diseño y una verificación final de coherencia. **Los pasos 1 a 4 se hacen antes de programar** y cada uno produce un resultado que el siguiente transforma: la secuencia usa los participantes de la robustez, y si al dibujar un diagrama el grupo descubre que falta algo, vuelve al anterior y lo corrige. **El paso 5 (modelo de clases) y el paso 6 (coherencia y trazabilidad) se hacen después de implementar** (Parte B), porque el modelo de clases se obtiene del código.
 
 | Paso | Qué se entrega | Para profundizar |
 |---|---|---|
@@ -81,8 +83,8 @@ El diseño se hace en seis pasos: los cinco de diseño y una verificación final
 | 2. Análisis tridimensional | Tabla de las tres dimensiones | Referencia: «Paso 2» · Ejemplo: «Paso 2» |
 | 3. Diagrama de robustez | Diagrama y reglas de negocio ubicadas | Referencia: «Paso 3» · Ejemplo: «Paso 3» |
 | 4. Diagramas de secuencia | Un diagrama por camino y asignación de responsabilidades | Referencia: «Paso 4» · Ejemplo: «Paso 4» |
-| 5. Modelo de clases | Diagrama de clases y justificación del diseño | Referencia: «Paso 5» y «Justificación del diseño» · Ejemplo: «Paso 5» |
-| 6. Coherencia y trazabilidad | Verificación contra el TP3 y el TP1, y tabla de trazabilidad | Referencia: «Coherencia con la arquitectura y trazabilidad» · Ejemplo: «Trazabilidad y pruebas» |
+| 5. Modelo de clases (después de implementar) | Diagrama de clases obtenido del código, su validación contra el diseño y la justificación | Referencia: «Paso 5» y «Justificación del diseño» · Ejemplo: «Paso 5» |
+| 6. Coherencia y trazabilidad (después de implementar) | Verificación contra el TP3 y el TP1, y tabla de trazabilidad | Referencia: «Coherencia con la arquitectura y trazabilidad» · Ejemplo: «Trazabilidad y pruebas» |
 
 ### Paso 1 — Ficha de la HU
 
@@ -119,14 +121,15 @@ El diseño se hace en seis pasos: los cinco de diseño y una verificación final
 
 **Cómo se sabe que está bien:** cada diagrama entra en una pantalla, hay un camino de error, ninguna frontera decide y cada mensaje tiene un responsable. Cada mensaje entre componentes distintos existe en el catálogo de relaciones del TP3, y la táctica del escenario de calidad se ve como una operación o un mensaje concreto.
 
-### Paso 5 — Modelo de clases
+### Paso 5 — Modelo de clases (se hace después de implementar)
 
 **Qué se entrega**
 
-- Un **diagrama de clases** derivado de las secuencias, que reúne lo que aparece en todas ellas.
+- Un **diagrama de clases obtenido del código implementado** (por ingeniería inversa), con una herramienta que lo genere o con ayuda de la IA, y revisado por el grupo. Reúne lo que aparece en todas las secuencias de la HU.
+- La **validación del diagrama**: una tabla breve que contrasta el diagrama obtenido con la robustez y las secuencias, e indica cada diferencia con su resolución (se corrigió el código o se actualizó el diagrama de diseño, y por qué). Sirve para comprobar que el comportamiento implementado coincide con lo modelado.
 - La **justificación del diseño**: qué responsabilidad tiene cada clase principal y con qué criterio GRASP se la asignó, y las decisiones de diseño tomadas (por ejemplo, por qué hay una interfaz en un lugar o por qué una regla vive en una entidad). Si se usa un patrón de diseño, se nombra, se indica el problema que resuelve y dónde está en el diagrama. Los patrones son opcionales.
 
-**Cómo se sabe que está bien:** todo lo del modelo aparece en las secuencias y viceversa, y las entidades no son anémicas.
+**Cómo se sabe que está bien:** el diagrama coincide con el código, todo lo que aparece en él tiene respaldo en las secuencias y viceversa (o la diferencia está explicada), y las entidades no son anémicas.
 
 ### Paso 6 — Coherencia con la arquitectura y trazabilidad
 
@@ -169,7 +172,7 @@ La interfaz gráfica es parte de lo que se entrega porque en la defensa el grupo
 
 El `README.md` del repositorio incluye las instrucciones para instalar las dependencias y para ejecutar la interfaz y las pruebas, con comandos que funcionen en una máquina limpia. Si el grupo usa una base de datos real, indica también cómo crearla o inicializarla.
 
-**Cómo se sabe que está bien:** los nombres de clases y operaciones del código coinciden con los del diagrama de clases; la interfaz solo conoce a los controladores y no contiene reglas de negocio; los servicios externos están simulados detrás de interfaces y la persistencia, sea en memoria o real, está detrás de la interfaz del repositorio; el proyecto se instala y se ejecuta siguiendo solo el `README.md`.
+**Cómo se sabe que está bien:** el código sigue los diagramas de secuencia (cada participante es una clase y cada mensaje, una operación, con los mismos nombres); la interfaz solo conoce a los controladores y no contiene reglas de negocio; los servicios externos están simulados detrás de interfaces y la persistencia, sea en memoria o real, está detrás de la interfaz del repositorio; el proyecto se instala y se ejecuta siguiendo solo el `README.md`.
 
 **Para profundizar:** Referencia: «Parte B — Implementación».
 
@@ -182,9 +185,11 @@ El `README.md` del repositorio incluye las instrucciones para instalar las depen
 - Una **tabla de casos de prueba**, con técnica (caja negra o caja blanca), origen (criterio de aceptación, escenario de calidad o parte del código), datos de entrada y estado, y resultado esperado.
 - Las **pruebas automatizadas**, en `tests/`, ejecutables con el framework elegido.
 - El **reporte de cobertura** y un breve análisis: qué no quedó cubierto y por qué, qué pruebas se agregaron al ver el reporte, y si hay pruebas que pasan pero verifican poco.
-- La **complejidad ciclomática**: **a definir.** La forma en que se usa en la entrega se presenta en la clase del 10/11. Hasta entonces no se pide nada sobre este tema.
+- La **complejidad ciclomática** de las operaciones que implementa la HU elegida (no de todo el sistema), calculada como decisiones más uno. Se entrega una tabla con cada operación, su complejidad y los casos de prueba que cubren cada camino, y es el criterio de la **caja blanca**: una prueba por camino independiente.
 
-**Cómo se sabe que está bien:** cada criterio de aceptación de la HU tiene al menos un caso de prueba, la medida del escenario de calidad tiene una prueba que la verifica, las pruebas pasan todas al ejecutarlas desde cero, cada prueba verifica un solo comportamiento y no depende de otra, y no se prueba a través de la interfaz gráfica.
+La **caja negra** se cubre con casos de partición en clases de equivalencia o de valores límite, derivados de los criterios de aceptación. La estructura de cada prueba es libre; usar el formato Given-When-Then es opcional.
+
+**Cómo se sabe que está bien:** cada criterio de aceptación de la HU tiene al menos un caso de prueba, cada camino de las operaciones de la HU tiene su prueba (el reporte de cobertura de ramas lo confirma), la medida del escenario de calidad tiene una prueba que la verifica, las pruebas pasan todas al ejecutarlas desde cero, cada prueba verifica un solo comportamiento y no depende de otra, y no se prueba a través de la interfaz gráfica.
 
 **Para profundizar:** Referencia: «Parte C — Pruebas unitarias».
 
@@ -207,7 +212,7 @@ Todo el resultado se organiza dentro del repositorio del grupo:
 
 El uso de inteligencia artificial está permitido y forma parte de la consigna. Puede asistir en el diseño (proponer clases, detectar responsabilidades mal asignadas), en la programación y en la generación de pruebas.
 
-La IA suele proponer diseños con más clases, más interfaces y más patrones de los que el problema necesita, y código que funciona pero no respeta el diseño del grupo. Por eso el grupo documenta cada interacción: qué solicitó, qué obtuvo, qué aceptó, modificó o descartó, y por qué. En particular debe verificar que los diagramas generados cumplan las reglas de la Referencia (Pasos 3 a 5), que el código coincida con el diagrama de clases, y que las pruebas verifiquen comportamiento real. El registro se guarda en `docs/uso-ia.md`.
+La IA suele proponer diseños con más clases, más interfaces y más patrones de los que el problema necesita, y código que funciona pero no respeta el diseño del grupo. Por eso el grupo documenta cada interacción: qué solicitó, qué obtuvo, qué aceptó, modificó o descartó, y por qué. En particular debe verificar que los diagramas generados cumplan las reglas de la Referencia (Pasos 3 a 5), que el código coincida con las secuencias y el diagrama de clases obtenido de él, y que las pruebas verifiquen comportamiento real. El registro se guarda en `docs/uso-ia.md`.
 
 ---
 
@@ -221,20 +226,21 @@ La IA suele proponer diseños con más clases, más interfaces y más patrones d
 - [ ] Análisis tridimensional de la HU.
 - [ ] Diagrama de robustez, con la ubicación de cada regla de negocio.
 - [ ] Un diagrama de secuencia por camino (éxito y rechazos), con las responsabilidades justificadas con GRASP.
-- [ ] Un diagrama de clases derivado de los diagramas de secuencia.
+- [ ] Un diagrama de clases obtenido del código implementado, con su validación contra la robustez y las secuencias (diferencias y resoluciones).
 - [ ] Justificación del diseño (criterios GRASP y, si los hay, patrones de diseño usados).
 - [ ] Verificación de coherencia con la arquitectura y, si corresponde, actualización del TP3.
 - [ ] Tabla de trazabilidad HU → componente C4 → clases → archivo → pruebas.
 
 **Implementación (Parte B)**
 
-- [ ] Código en `src/`, coherente con el diagrama de clases, con la persistencia elegida (en memoria o base de datos real) y los servicios externos simulados, detrás de interfaces.
+- [ ] Código en `src/`, coherente con los diagramas de secuencia, con la persistencia elegida (en memoria o base de datos real) y los servicios externos simulados, detrás de interfaces.
 - [ ] Interfaz gráfica mínima que permite ejecutar la HU.
 - [ ] `README.md` con las instrucciones para instalar y ejecutar.
 
 **Pruebas (Parte C)**
 
 - [ ] Tabla de casos de prueba (caja negra y caja blanca), con su origen.
+- [ ] Tabla de complejidad ciclomática de las operaciones de la HU, con una prueba por camino.
 - [ ] Pruebas automatizadas en `tests/`, ejecutables con el framework elegido, que pasan todas al ejecutarlas desde cero.
 - [ ] Reporte de cobertura y su análisis.
 
@@ -271,9 +277,9 @@ La defensa incluye una **demostración del sistema funcionando**, a partir del r
 | 1. Introducción | Propósito, HU elegida, motivo de la elección y siglas usadas |
 | 2. Relación con la arquitectura | Tabla de coherencia: `EC-xx`, táctica y `DA-xx`; componentes y capas que atraviesa; estilo y patrones; verificación de coherencia |
 | 3. Diseño de la HU | Enunciado y criterios, entidades del modelo de dominio que intervienen, análisis tridimensional, diagrama de robustez, diagramas de secuencia (uno por camino) con la asignación de responsabilidades |
-| 4. Modelo de clases | Un diagrama derivado de todas las secuencias |
+| 4. Modelo de clases | Un diagrama obtenido del código implementado y su validación contra las secuencias |
 | 5. Justificación del diseño | Asignación de responsabilidades (GRASP), decisiones de diseño y patrones de diseño usados, si los hay |
 | 6. Implementación | Estructura del código, cómo se ejecuta y cómo se reemplazan la persistencia y los servicios externos |
-| 7. Pruebas | Tabla de casos de prueba, resultados y análisis de cobertura |
+| 7. Pruebas | Tabla de casos de prueba, complejidad ciclomática de las operaciones de la HU, resultados y análisis de cobertura |
 | 8. Trazabilidad | HU → componente C4 → clases → archivo → pruebas |
 | 9. Glosario y bibliografía | Siglas y términos, y referencias |

@@ -21,8 +21,9 @@ flowchart LR
     P1["1. Seleccionar<br/>la funcionalidad"] --> P2["2. Análisis<br/>tridimensional"]
     P2 --> P3["3. Robustez<br/>quién es quién"]
     P3 --> P4["4. Secuencia<br/>quién hace qué"]
-    P4 --> P5["5. Modelo<br/>de clases"]
-    P5 -.->|"si algo falta,<br/>se corrige el paso anterior"| P4
+    P4 --> IMP["Implementación<br/>(Parte B)"]
+    IMP --> P5["5. Modelo de clases<br/>(del código)"]
+    P5 -.->|"si algo no coincide,<br/>se corrige código o diseño"| P4
 ```
 
 | Paso | Pregunta que responde | Resultado |
@@ -31,9 +32,11 @@ flowchart LR
 | 2. Análisis tridimensional | ¿Qué hace, con qué se hace y qué propiedades debe cumplir? | Tabla de las tres dimensiones |
 | 3. Diagrama de robustez | ¿Qué elementos intervienen y de qué tipo son? | Diagrama de robustez |
 | 4. Diagrama de secuencia | ¿En qué orden colaboran y quién tiene cada responsabilidad? | Diagrama de secuencia |
-| 5. Modelo de clases | ¿Qué clases, atributos, operaciones y relaciones hacen falta? | Diagrama de clases |
+| 5. Modelo de clases | ¿Qué clases, atributos, operaciones y relaciones tiene el código y coinciden con el diseño? | Diagrama de clases obtenido del código, con su validación |
 
-Los pasos 3, 4 y 5 se hacen en ese orden porque cada diagrama se deriva del anterior: **lo que no aparece en el diagrama de secuencia no aparece en el de clases**, y lo que no aparece en el de robustez no se invoca en el de secuencia. Si al dibujar un diagrama el grupo descubre que falta algo, vuelve al anterior y lo corrige.
+Los pasos 1 a 4 se hacen **antes de programar**, en ese orden, porque la secuencia usa los participantes de la robustez: lo que no aparece en el diagrama de robustez no se invoca en el de secuencia. La secuencia es el plano que se implementa: cada participante pasa a ser una clase y cada mensaje, una operación.
+
+El **modelo de clases (paso 5)** se hace **después de implementar**, porque se obtiene del código por ingeniería inversa y se contrasta con lo diseñado. No hace falta dibujarlo antes de programar: si el grupo lo necesita para pensar, puede hacer un borrador, pero no se entrega. Si al implementar o al contrastar el grupo descubre que algo no coincide, corrige el código o el diagrama anterior, según cuál estuviera equivocado.
 
 ---
 
@@ -201,18 +204,27 @@ Regla práctica: cada diagrama entra en una pantalla. Si tiene 50 mensajes, no s
 
 ## Paso 5 — Modelo de clases
 
-El diagrama de clases no se inventa: se descubre a partir de la secuencia. El método es casi mecánico:
+El diagrama de clases se hace **después de implementar**, como **ingeniería inversa**: se obtiene a partir del código que ya funciona y se lo contrasta con lo diseñado. Así el diagrama documenta lo que existe en lugar de ser una hipótesis previa.
 
-1. Cada participante de la secuencia pasa a ser una clase o una interfaz.
-2. Cada mensaje que recibe pasa a ser una operación de esa clase.
-3. La información que necesita para cumplir su tarea son sus atributos.
-4. Las líneas del modelo (dependencias y asociaciones) surgen de la colaboración entre las clases.
+**Cómo se obtiene.**
 
-**Lo que no aparece en la secuencia no aparece en el modelo de clases, y al revés: si aparece en el modelo, tiene que tener respaldo en el comportamiento.**
+1. Con una herramienta que lo genere desde el código. En Python, por ejemplo, `pyreverse` (acompaña a `pylint`); otros lenguajes tienen equivalentes. Hay que verificar qué formatos admite la versión instalada.
+2. O pidiéndole a la IA que dibuje el diagrama en Mermaid a partir del código. En ese caso el grupo lo revisa contra el código línea por línea, porque la IA puede inventar o omitir clases y relaciones.
+3. Se limpia: se dejan las clases de la HU y se quita lo que no aporta (por ejemplo, detalles de librerías).
 
-Reglas:
+**Cómo se valida.** El diagrama obtenido se contrasta con los diagramas de robustez y de secuencia. Por cada diferencia, el grupo decide cuál estaba equivocado y lo deja anotado:
 
-- Cada clase incluye los atributos y las operaciones que el diagrama de secuencia usa, con sus tipos. No se agregan operaciones "por si acaso".
+| Diferencia encontrada | Qué estaba mal | Qué se hizo |
+|---|---|---|
+| Una clase del diagrama no aparece en ninguna secuencia | El código tiene algo que el diseño no pedía | Se quita del código, o se agrega a la secuencia y se justifica |
+| Una operación de la secuencia no está en el código | Falta implementar, o se implementó con otro nombre | Se implementa, o se corrige el nombre |
+| La regla vive en otra clase que la indicada en la robustez | El código o el diseño | Se mueve la regla, o se actualiza la robustez y se explica |
+
+**El comportamiento implementado tiene que coincidir con el modelado.** Si el diagrama de clases y las secuencias dicen cosas distintas, el trabajo no está terminado.
+
+Reglas para el diagrama resultante:
+
+- Cada clase incluye los atributos y las operaciones que el código tiene, con sus tipos. No se dejan operaciones "por si acaso": si el diagrama muestra una operación que ninguna secuencia usa, hay que decidir si sobra en el código.
 - Los repositorios y las conexiones hacia sistemas externos se modelan como **interfaces**; la clase concreta (en memoria, simulada) aparece aparte y las implementa. Esto permite reemplazar la persistencia real sin tocar el controlador.
 - Las relaciones indican su tipo: asociación, dependencia (`..>`), realización de interfaz (`..|>`), herencia y composición. Se indica la multiplicidad cuando importa.
 - Las clases de dominio conservan los nombres y las relaciones del modelo de dominio del TP1. Si el diseño necesita cambiar algo (un nombre, una relación o una clase nueva), el cambio se documenta y el modelo del TP1 se actualiza.
@@ -234,7 +246,7 @@ La justificación tiene que ser honesta: más clases e interfaces tienen un cost
 
 ## Coherencia con la arquitectura y trazabilidad
 
-Antes de cerrar la Parte A, se comprueba que las tres dimensiones de la tabla de coherencia (Paso 1) quedaron reflejadas en el diseño. Esa verificación consiste en responder, con evidencia, siete preguntas: si cada participante de las secuencias pertenece a un componente de la ficha, si cada mensaje entre componentes está en el catálogo de relaciones del TP3, si el diseño respeta las restricciones del estilo y de los patrones, si la táctica del escenario aparece como operación o mensaje, si cada entidad del diagrama de robustez está en el modelo de dominio, si cada entidad que interviene aparece en el diseño y si la medida del escenario tiene una prueba. La tabla para completar está en la consigna.
+Con el código implementado y el modelo de clases obtenido, se comprueba que las tres dimensiones de la tabla de coherencia (Paso 1) quedaron reflejadas en el diseño. Esa verificación consiste en responder, con evidencia, siete preguntas: si cada participante de las secuencias pertenece a un componente de la ficha, si cada mensaje entre componentes está en el catálogo de relaciones del TP3, si el diseño respeta las restricciones del estilo y de los patrones, si la táctica del escenario aparece como operación o mensaje, si cada entidad del diagrama de robustez está en el modelo de dominio, si cada entidad que interviene aparece en el diseño y si la medida del escenario tiene una prueba. La tabla para completar está en la consigna.
 
 Las diferencias que aparezcan entre el diseño y el TP3, o entre el diseño y el modelo de dominio del TP1, no son un error del grupo: el diseño se precisa al bajar de nivel. Lo importante es que cada diferencia quede documentada y que el documento anterior se actualice.
 
@@ -259,7 +271,7 @@ tests/
 
 ### Reglas de implementación
 
-1. **El código sigue al diseño.** Los nombres de clases y operaciones coinciden con los del diagrama de clases. Si al programar el grupo descubre que el diseño estaba mal, corrige primero el diagrama y después el código: al final, ambos deben decir lo mismo.
+1. **El código sigue a la secuencia.** Cada participante del diagrama de secuencia es una clase, y cada mensaje, una operación con el mismo nombre. Si al programar el grupo descubre que el diseño estaba mal, corrige primero el diagrama de secuencia y después el código. Al final, el diagrama de clases obtenido del código (Paso 5) debe coincidir con lo diseñado.
 2. **Dependencias en un solo sentido.** La interfaz gráfica depende de los controladores; los controladores, del dominio y de las interfaces; las implementaciones de infraestructura implementan esas interfaces. El dominio no importa nada de las demás capas.
 3. **Los colaboradores se reciben, no se crean.** El controlador recibe sus repositorios y sus conexiones hacia servicios externos por el constructor (inyección de dependencias). Quién arma los objetos concretos es un único lugar, el punto de arranque del programa.
 4. **Las reglas del dominio viven en las entidades.** Si el controlador tiene un `if` que verifica una regla del negocio, probablemente esa regla pertenece a una entidad.
@@ -316,7 +328,7 @@ Los casos de prueba se diseñan **antes** de escribirlos y se registran en una t
 |---|---|---|
 | Partición en clases de equivalencia | Se divide cada entrada en grupos de valores que el sistema trata igual, y se prueba un valor de cada grupo | Socios: activo sin multas, con multas, inactivo. Basta un socio de cada clase |
 | Valores límite | Los errores aparecen en los bordes de los rangos: se prueba justo en el borde, uno por debajo y uno por encima | Límite de 3 préstamos: socios con 2 préstamos (puede), 3 (no puede) y 4 |
-| Tabla de decisión | Cuando varias condiciones se combinan, se arma una tabla con las combinaciones y el resultado de cada una | Activo, sin multas y por debajo del límite: acepta. Si falla cualquiera de las tres, rechaza con su motivo |
+| Tabla de decisión (opcional) | Cuando varias condiciones se combinan, se arma una tabla con las combinaciones y el resultado de cada una | Activo, sin multas y por debajo del límite: acepta. Si falla cualquiera de las tres, rechaza con su motivo |
 
 **Caja blanca.** Se diseñan mirando el código. El objetivo es que las pruebas recorran lo que el código puede hacer. Hay tres niveles de exigencia:
 
@@ -326,7 +338,7 @@ Los casos de prueba se diseñan **antes** de escribirlos y se registran en una t
 | De decisiones (ramas) | Que cada `if` se pruebe con resultado verdadero y con resultado falso | Ramas que nadie probó |
 | De caminos | Que se recorran las combinaciones de decisiones | Interacciones entre decisiones; es muy costosa y se aplica solo a lo crítico |
 
-Este análisis puede mostrar casos que los criterios de aceptación no contemplan.
+En este TP, el criterio de la caja blanca es la **complejidad ciclomática** (ver más abajo): una prueba por cada camino independiente de las operaciones de la HU, lo que asegura cubrir todas las decisiones. Este análisis puede mostrar casos que los criterios de aceptación no contemplan.
 
 | ID | Técnica | Origen | Dado (entrada y estado) | Resultado esperado |
 |---|---|---|---|---|
@@ -337,13 +349,13 @@ Este análisis puede mostrar casos que los criterios de aceptación no contempla
 
 ### Estructura de una prueba
 
-Cada prueba sigue la estructura de los criterios de aceptación del TP1: se prepara el estado inicial (*Given*), se ejecuta la operación (*When*) y se verifica el resultado (*Then*). El nombre de la prueba dice qué comportamiento verifica, no qué método llama. El ejemplo está en Python con pytest:
+Cada prueba tiene tres momentos: se prepara el estado inicial, se ejecuta la operación y se verifica el resultado. El nombre de la prueba dice qué comportamiento verifica, no qué método llama. **Usar el formato Given-When-Then de los criterios de aceptación para marcar esos tres momentos es opcional**: sirve si ayuda a leer la prueba, pero no se exige. El ejemplo está en Python con pytest, con los tres momentos marcados con comentarios (se pueden omitir):
 
 ```python
 def test_rechaza_al_socio_con_multas_y_el_ejemplar_sigue_disponible():
-    controlador, ejemplar, prestamos = armar(Socio("s1", multas=1))   # Given
-    r = controlador.prestar("s1", "e1")                               # When
-    assert not r.aceptado and "multas" in r.motivo                    # Then
+    controlador, ejemplar, prestamos = armar(Socio("s1", multas=1))   # preparar (Given)
+    r = controlador.prestar("s1", "e1")                               # ejecutar (When)
+    assert not r.aceptado and "multas" in r.motivo                    # verificar (Then)
     assert ejemplar.disponible and prestamos.guardados == []
 ```
 
@@ -355,7 +367,7 @@ Se ejecutan las pruebas con el framework elegido y se genera el reporte de cober
 
 ```bash
 pip install pytest pytest-cov
-pytest --cov=src --cov-report=term-missing
+pytest --cov=src --cov-branch --cov-report=term-missing
 ```
 
 La **cobertura** indica qué porcentaje del código se ejecutó durante las pruebas (según la herramienta, de líneas o de ramas). Los reportes suelen listar, además, lo que no se ejecutó (en el ejemplo, con `term-missing`). El reporte se acompaña de un breve análisis que responde:
@@ -368,12 +380,20 @@ Una cobertura alta no prueba que el código sea correcto: dice qué se ejecutó,
 
 ### Complejidad ciclomática
 
-**A definir.** La forma en que se usa en la entrega se presenta en la clase del 10/11. Hasta entonces no se pide nada sobre este tema. Lo que sigue es material de apoyo.
-
 **Qué mide.** La complejidad ciclomática de una operación es la cantidad de caminos independientes que tiene el código. Se calcula como la cantidad de decisiones (`if`, ciclos, condiciones combinadas con "y" u "o", casos de un `switch` y manejadores de excepciones) más uno. Sirve para dos cosas:
 
-- **Estimar el esfuerzo de prueba:** es la cantidad mínima de casos de prueba necesaria para cubrir todas las ramas de la operación.
+- **Decidir cuántas pruebas de caja blanca hacen falta:** es la cantidad mínima de casos necesaria para recorrer todos los caminos de la operación. **Es el criterio de caja blanca de este TP.**
 - **Detectar código difícil de entender y de mantener:** como referencia habitual, se considera que una operación con más de 10 conviene dividirla.
+
+**Alcance en este TP.** Se calcula **solo para las operaciones que implementa la HU elegida** (normalmente la regla de una entidad y la operación del controlador), no para todo el sistema.
+
+**Procedimiento.**
+
+1. Listar las operaciones de la HU que tienen decisiones.
+2. Contar las decisiones de cada una y sumar uno.
+3. Escribir una prueba por cada camino, es decir, tantas como indique la complejidad.
+4. Ejecutar las pruebas con el reporte de cobertura de ramas y comprobar que no quede ninguna rama sin recorrer.
+5. Registrar el resultado en una tabla con la operación, sus decisiones, su complejidad y los casos de prueba que cubren cada camino.
 
 | Operación del ejemplo | Decisiones | Complejidad | Casos mínimos |
 |---|---|---|---|
@@ -404,7 +424,7 @@ La IA puede proponer casos de prueba y generar pruebas. El grupo debe verificar 
 | EC | Escenario de calidad |
 | GoF | *Gang of Four*: los cuatro autores del libro clásico de patrones de diseño |
 | GRASP | Patrones generales para asignar responsabilidades (*general responsibility assignment software patterns*) |
-| GWT | Given-When-Then: formato de los criterios de aceptación |
+| GWT | Given-When-Then: formato de los criterios de aceptación (en las pruebas es opcional) |
 | HU | Historia de usuario |
 | IA | Inteligencia artificial |
 | TP | Trabajo práctico |
